@@ -112,17 +112,13 @@ export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
     let t: ReturnType<typeof setTimeout>;
     const go = () => {
       if (cancelled) return;
-      // the riffle plays once per session — returning to the home page
-      // (back from a project, nav from /about) must not replay it
-      if (
-        sessionStorage.getItem("sb-intro-done") === "1" ||
-        mobileRef.current ||
-        matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
+      // The riffle replays on every arrival at the home page, phones included:
+      // on mobile every spread is already mounted and decoded, so no turn ever
+      // waits on a fetch. Reduced-motion users still open on the resting spread.
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
         setCurrent(home);
         return;
       }
-      sessionStorage.setItem("sb-intro-done", "1");
       introRef.current = true;
       setIntro(true);
       seqRef.current = buildSeq();

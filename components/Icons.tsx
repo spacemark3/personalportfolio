@@ -1,5 +1,7 @@
 // Social icons from public/icons/*.png, applied as CSS masks so they
 // render in currentColor (and invert on hover like the old SVGs).
+import { asset } from "@/lib/asset";
+
 const files: Record<string, string> = {
   instagram: "/icons/instagram.png",
   x: "/icons/x.png",
@@ -8,7 +10,7 @@ const files: Record<string, string> = {
 };
 
 export function Icon({ type }: { type: "instagram" | "x" | "linkedin" | "email" }) {
-  const url = `url(${files[type]})`;
+  const url = `url(${asset(files[type])})`;
   return (
     <span
       className="icon-mask"
