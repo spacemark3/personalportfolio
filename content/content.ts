@@ -15,9 +15,9 @@ export const pic = (src: string): Pic => {
 
 // ---------- site chrome (every visible string is editable here) ----------
 export const site = {
-  name: "Matthew Yu",
-  footer: "© Matthew Yu 2026",
-  nav: { work: "work", play: "play", inspiration: "inspiration" },
+  name: "Mark Andro",
+  footer: "© Mark Andro 2026",
+  nav: { work: "journey", play: "play", inspiration: "inspiration" },
   labels: {
     projects: "Projects",
     art: "Art",

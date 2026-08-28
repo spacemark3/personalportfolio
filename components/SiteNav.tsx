@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icons";
 import { site, about } from "@/content/content";
 
-// Shared fixed header: name left; nav + social links right. "work" scrolls
+// Shared fixed header: name left; nav + social links right. "journey" scrolls
 // to the projects grid WITHOUT leaving a #hash in the URL — a lingering
 // hash makes the browser re-anchor on every reload/HMR, which read as the
 // page "randomly scrolling down".
