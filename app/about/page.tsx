@@ -1,12 +1,13 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
-import { site, about } from "@/content/content";
+import { about } from "@/content/content";
 
-export const metadata: Metadata = { title: "About — Matthew Yu" };
+export const metadata: Metadata = { title: "About — Mark Andro" };
 
-// About: the bio (left) with the headshot centered beside it.
+// About: the bio, on its own for now. The headshot that used to sit beside
+// it was the previous owner's — drop a new one in and restore the .headshot
+// block when there's a portrait to show.
 export default function AboutPage() {
   return (
     <main id="main" className="page">
@@ -25,15 +26,6 @@ export default function AboutPage() {
               )
             )}
           </p>
-        </div>
-        <div className="headshot">
-          <Image
-            src={about.headshot.src}
-            alt={site.name}
-            width={about.headshot.w}
-            height={about.headshot.h}
-            sizes="(max-width: 560px) 96px, 132px"
-          />
         </div>
       </section>
 

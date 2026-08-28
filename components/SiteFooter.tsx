@@ -22,7 +22,7 @@ export default function SiteFooter() {
         </div>
         <div>
           <Link href="/">Home</Link>
-          <a href="/#projects">{site.nav.work}</a>
+          <Link href="/journey">{site.nav.work}</Link>
           <Link href="/play">Play</Link>
           <Link href="/about">About</Link>
           <Link href="/inspiration">Inspiration</Link>

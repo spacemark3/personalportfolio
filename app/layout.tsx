@@ -13,11 +13,16 @@ const futura = localFont({
   display: "swap",
 });
 
+// live at the GitHub Pages project URL
 export const metadata: Metadata = {
-  metadataBase: new URL("https://matthewyu.dev"),
-  title: "Matthew Yu",
-  description: "tech, art, design, film — Stanford '29",
-  openGraph: { title: "Matthew Yu", description: "tech, art, design, film", url: "https://matthewyu.dev" },
+  metadataBase: new URL("https://spacemark3.github.io/personalportfolio/"),
+  title: "Mark Andro",
+  description: "software architect / artist / jack of all trades",
+  openGraph: {
+    title: "Mark Andro",
+    description: "software architect / artist / jack of all trades",
+    url: "https://spacemark3.github.io/personalportfolio/",
+  },
 };
 
 export default function RootLayout({
