@@ -537,8 +537,14 @@ section {
 }
 
 .hero-kicker {
-  font-size: 10.5px;
-  font-weight: 600;
+  /* one line on every screen: at 10.5px with 0.24em tracking the line runs
+     ~370px, so it wrapped on any phone narrower than ~430px. Scaling with
+     the viewport under that width keeps it a single line without touching
+     the tracking; min() pins it back to 10.5px from ~456px up, so desktop
+     is unchanged. Retune the 2.3vw if the eyebrow copy gets longer. */
+  white-space: nowrap;
+  font-size: min(10.5px, 2.3vw);
+  font-weight: 400;
   letter-spacing: var(--track-caps);
   text-align: center;
   color: var(--ink-soft);
@@ -553,7 +559,7 @@ section {
   font-size: clamp(56px, 11vw, 118px);
   letter-spacing: var(--track-display);
   color: #8fd9a1; /* light green */
-  filter: blur(6px); /* pushed into the background, out of focus */
+  filter: blur(3px); /* pushed into the background, out of focus */
   text-align: center;
   line-height: 1;
   white-space: nowrap;
