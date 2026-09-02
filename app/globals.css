@@ -14,6 +14,9 @@
   --ink-soft: rgba(29, 31, 34, 0.68);
   --hairline: rgba(29, 31, 34, 0.14);
   --ph: #d7dbe0; /* image placeholder (cool) */
+  /* the hero name's green, promoted to a token: the site's one accent.
+     Ink on it runs ~11:1, so it carries body copy without help. */
+  --accent: #8fd9a1;
   --font: var(--font-futura), "Futura", "Avenir Next", system-ui, sans-serif;
   /* one tracking scale for the whole site */
   --track-caps: 0.24em; /* small uppercase labels */
@@ -558,7 +561,7 @@ section {
   font-weight: 400; /* regular everywhere; no bold anywhere on the site */
   font-size: clamp(56px, 11vw, 118px);
   letter-spacing: var(--track-display);
-  color: #8fd9a1; /* light green */
+  color: var(--accent);
   filter: blur(3px); /* pushed into the background, out of focus */
   text-align: center;
   line-height: 1;
@@ -1226,4 +1229,369 @@ main.dark .inspo {
 /* home ends right after projects — copyright, then a short tail of air */
 .page.home {
   padding-bottom: clamp(28px, 5vh, 56px);
+}
+
+/* ---------- journey: a shelf of books, seen spine-out ---------- */
+
+/* NOTE on the axes below: the spines and the chapter rail are set in
+   `writing-mode: vertical-rl`, which rotates flexbox with them — `row` runs
+   down the page and `column` runs across it. That is why the rules read
+   backwards, and why the same declarations still hold when the mobile block
+   turns the writing mode upright: the logical axes flip with it. */
+
+/* the shelf needs room to stand: wider than the reading column elsewhere */
+.journey {
+  max-width: 1320px;
+}
+
+/* the page's opening line — one notch up from body copy, then a long pause */
+.jr-open {
+  max-width: 46ch;
+  font-size: 17px;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  margin-bottom: clamp(48px, 7vh, 88px);
+}
+
+/* ---- the shelf ---- */
+
+.shelf {
+  display: flex;
+  align-items: stretch;
+  min-height: clamp(400px, 58vh, 620px);
+  /* a long shelf scrolls rather than crushing its spines */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: var(--s-3);
+}
+
+.shelf-group {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 0; /* the global section margin has no place on a shelf */
+}
+
+.shelf-group + .shelf-group {
+  margin-left: clamp(24px, 3vw, 52px);
+}
+
+/* the chapter's own rail: name standing at the top, place at the foot —
+   a label that sits on the shelf edge rather than above it */
+.shelf-rail {
+  display: flex;
+  flex-direction: row; /* vertical-rl: down the rail */
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-5);
+  writing-mode: vertical-rl;
+  padding: var(--s-2) var(--s-3) var(--s-2) 0;
+}
+
+.shelf-label {
+  font-weight: 400; /* h2 defaults to bold; nothing on this site is bold */
+  font-size: 12px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.shelf-where {
+  font-size: 11px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ---- a book ---- */
+
+/* books share their hairlines (-1px) so a chapter reads as one run of spines
+   pressed together, not a row of separate objects */
+.book {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--hairline);
+  transition: background 0.5s var(--ease-out-strong);
+}
+
+.book + .book {
+  margin-left: -1px;
+}
+
+/* the pulled book is the one moment of colour on the page: the same green
+   the hero name is set in, so the shelf blooms rather than lights up */
+.book[data-open] {
+  background: var(--accent);
+  border-color: var(--accent);
+  position: relative;
+  z-index: 1;
+}
+
+/* the heading is structure only — the spine inside it carries the type, and
+   `font: inherit` there would otherwise pick up the h3 default */
+.book-h {
+  display: flex;
+  font-weight: 400;
+  font-size: inherit;
+}
+
+/* ---- the spine ---- */
+
+.spine {
+  display: flex;
+  flex-direction: row; /* vertical-rl: down the spine */
+  justify-content: space-between; /* title at the head, year at the foot */
+  align-items: center; /* centred across the spine width */
+  gap: var(--s-6);
+  width: clamp(58px, 5vw, 74px);
+  flex: none;
+  padding: clamp(16px, 2vh, 26px) 0;
+  writing-mode: vertical-rl;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.4s var(--ease-out-strong);
+}
+
+.spine:hover {
+  background: rgba(143, 217, 161, 0.22);
+}
+
+.book[data-open] .spine:hover {
+  background: transparent;
+}
+
+.spine:focus-visible {
+  outline-offset: -4px; /* inset, so the shelf scroller cannot clip the ring */
+}
+
+/* title and place run as two parallel lines of vertical type, each free to
+   truncate on its own — stacked end to end they would outrun the shelf */
+.spine-text {
+  display: flex;
+  flex-direction: column; /* vertical-rl: across the spine */
+  gap: var(--s-3);
+  min-height: 0;
+}
+
+.spine-title {
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spine-place {
+  font-size: 11.5px;
+  letter-spacing: var(--track-nav);
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spine-when {
+  font-size: 11.5px;
+  letter-spacing: var(--track-nav);
+  color: var(--ink-soft);
+  flex: none;
+}
+
+/* on the green, soft ink needs to sit darker to hold its contrast */
+.book[data-open] .spine-place,
+.book[data-open] .spine-when {
+  color: rgba(29, 31, 34, 0.72);
+}
+
+/* ---- the opened leaf ---- */
+
+/* 0fr → 1fr animates the book open sideways, to the panel's own width, with
+   nothing measured in JS; the clip holds the text in while it travels (and
+   its overflow is what lets the track collapse to nothing) */
+.leaf {
+  display: grid;
+  grid-template-columns: 0fr;
+  transition: grid-template-columns 0.62s var(--ease-out-strong);
+}
+
+.book[data-open] .leaf {
+  grid-template-columns: 1fr;
+}
+
+.leaf-clip {
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* the fore-edge: hairlines stacked like the page edges of the opened block */
+.leaf-inner {
+  width: min(46vw, 460px);
+  height: 100%;
+  overflow-y: auto;
+  padding: clamp(20px, 3vh, 34px) clamp(22px, 3vw, 38px);
+  border-left: 1px solid rgba(29, 31, 34, 0.22);
+  background: repeating-linear-gradient(
+      to right,
+      rgba(29, 31, 34, 0.16) 0 1px,
+      transparent 1px 5px
+    )
+    left / 9px 100% no-repeat;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out-strong) 0.12s;
+}
+
+.book[data-open] .leaf-inner {
+  opacity: 1;
+}
+
+/* the left indent clears the fore-edge striping */
+.leaf-when {
+  margin-left: var(--s-4);
+  font-size: 11.5px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: rgba(29, 31, 34, 0.66);
+}
+
+.leaf-title {
+  margin: var(--s-2) 0 0 var(--s-4);
+  font-weight: 300;
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.2;
+  letter-spacing: var(--track-display);
+}
+
+.leaf-place {
+  margin: 5px 0 0 var(--s-4);
+  font-size: 13px;
+  letter-spacing: var(--track-nav);
+  color: rgba(29, 31, 34, 0.7);
+}
+
+/* the scope line: what the role actually was. Set as a sentence, not a
+   label — the letterspacing on the place above belongs to the company, and
+   two tracked-out lines in a row would read as one block. */
+.leaf-scope {
+  margin: var(--s-5) 0 0 var(--s-4);
+  font-size: 13.5px;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  color: rgba(29, 31, 34, 0.74);
+}
+
+/* same measurements as the about-page bio, so prose reads identically
+   wherever it appears on the site */
+.leaf-body {
+  margin: var(--s-4) 0 0 var(--s-4);
+  font-size: 15px;
+  line-height: 1.95;
+  letter-spacing: 0.025em;
+  color: var(--ink);
+}
+
+/* the drop cap. Futura Light — big enough to open the paragraph like a
+   chapter, quiet enough that it never competes with its own sentence. */
+.leaf-body::first-letter {
+  float: left;
+  font-weight: 300;
+  font-size: 3.4em;
+  line-height: 1;
+  margin: 0.06em 0.1em 0 -0.06em;
+  color: rgba(29, 31, 34, 0.6);
+}
+
+.leaf-note {
+  margin: var(--s-5) 0 0 var(--s-4);
+  font-size: 11.5px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: rgba(29, 31, 34, 0.66);
+}
+
+/* ---- no room to stand: the shelf lies down ---- */
+
+/* Below this the spines are too short to read a title down, so the books
+   turn on their side and open downwards instead of sideways. The writing
+   mode goes upright and the flex axes follow it, so most of the layout
+   above still applies unchanged. */
+@media (max-width: 880px) {
+  .shelf {
+    flex-direction: column;
+    min-height: 0;
+    overflow-x: visible;
+  }
+
+  .shelf-group {
+    flex-direction: column;
+  }
+
+  .shelf-group + .shelf-group {
+    margin-left: 0;
+    margin-top: clamp(48px, 7vh, 84px);
+  }
+
+  .shelf-rail {
+    justify-content: flex-start;
+    writing-mode: horizontal-tb;
+    padding: 0 0 var(--s-4);
+  }
+
+  .book {
+    flex-direction: column;
+  }
+
+  .book + .book {
+    margin-left: 0;
+    margin-top: -1px;
+  }
+
+  .spine {
+    width: 100%;
+    padding: var(--s-5) clamp(16px, 4vw, 24px);
+    writing-mode: horizontal-tb;
+  }
+
+  .spine-text {
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .spine-title,
+  .spine-place {
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .leaf {
+    grid-template-columns: 1fr;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.55s var(--ease-out-strong);
+  }
+
+  .book[data-open] .leaf {
+    grid-template-rows: 1fr;
+  }
+
+  .leaf-inner {
+    width: auto;
+    height: auto;
+    overflow-y: visible;
+    padding: clamp(20px, 3vh, 30px) clamp(16px, 4vw, 24px);
+    border-left: 0;
+    border-top: 1px solid rgba(29, 31, 34, 0.22);
+    background: none;
+  }
+
+  .leaf-when,
+  .leaf-title,
+  .leaf-place,
+  .leaf-scope,
+  .leaf-body,
+  .leaf-note {
+    margin-left: 0;
+  }
 }
