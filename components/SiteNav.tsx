@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Icon } from "@/components/Icons";
-import { site, about } from "@/content/content";
+import { site } from "@/content/content";
 
 // Shared fixed header: name left; nav + social links right. Every entry is a
 // real route, so nothing here scrolls the page or leaves a #hash behind.
@@ -72,20 +71,6 @@ export default function SiteNav({
         <Link href="/inspiration" aria-current={active === "inspiration" ? "page" : undefined}>
           {site.nav.inspiration}
         </Link>
-        <div className="top-socials">
-          {about.socials.map((b) => (
-            <a
-              key={b.type}
-              href={b.href}
-              target={b.type === "email" ? undefined : "_blank"}
-              rel="noreferrer"
-              className="icon-btn"
-              aria-label={b.label}
-            >
-              <Icon type={b.type} />
-            </a>
-          ))}
-        </div>
       </nav>
     </header>
   );
