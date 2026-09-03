@@ -150,14 +150,14 @@ const mounted = (file: string, title: string, flags?: SketchFlags): SketchPage =
 });
 
 export const sketchbook: SketchPage[] = [
-  mounted("i want to live", "\n No one is born in this world to be alone!\""),
+  mounted("i want to live", " No one is born in this world to be alone!"),
   mounted("助けて", "\"助けて\""),
-  mounted("eustass", "\n When you hit rock bottom, there is nowhere to go but up\""),
+  mounted("eustass", " When you hit rock bottom, there is nowhere to go but up"),
   mounted("i am proud of you", "\n One day, I will make you proud \n"),
-  mounted("sasuke", "\n This is the last time \""),
+  mounted("sasuke", " This is the last time "),
   mounted("notes", "\" I will never forget you\""),
-  mounted("kimono", "\n Wiseman -Frank Ocean \""),
-  mounted("fly", "Fly"),
+  mounted("kimono", " Sketches"),
+  mounted("fly", "To pimp a caterpillar"),
   mounted("prisoner of the mind", "Prisoner Of The Mind"),
   // `start` isn't flagged, so the opening riffle begins at the first spread
   // above; it loops through every page once and lands here
