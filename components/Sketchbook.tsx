@@ -60,16 +60,23 @@ const Chevron = ({ dir }: { dir: "left" | "right" }) => (
 );
 
 export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
-  const [current, setCurrent] = useState(0);
-  const [flip, setFlip] = useState<Flip | null>(null);
-  const idRef = useRef(0);
   const len = pages.length;
 
-  // opening sequence: riffle fast through the whole book, land on Taipei
-  const home = Math.max(
-    pages.findIndex((p) => p.src.endsWith("/taipei.png")),
+  // opening sequence: riffle fast through the whole book, beginning at the
+  // spread flagged `start` and landing on the one flagged `home` in
+  // content.ts (the first spread if either isn't flagged)
+  const start = Math.max(
+    pages.findIndex((p) => p.start),
     0
   );
+  const home = Math.max(
+    pages.findIndex((p) => p.home),
+    0
+  );
+
+  const [current, setCurrent] = useState(start);
+  const [flip, setFlip] = useState<Flip | null>(null);
+  const idRef = useRef(0);
   const [intro, setIntro] = useState(false);
   const introRef = useRef(false);
 
@@ -90,16 +97,23 @@ export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
   }, []);
   const q = mobile ? 50 : undefined; // next/image default (75) on desktop
 
-  // riffle sequence: one full loop around the book plus the run-in to the
-  // home spread, easing in, whirring through the middle, easing out to land
+  // riffle sequence: one full loop around the book from `start` back to
+  // `start`, plus the run-in to the home spread, easing in, whirring through
+  // the middle, easing out to land
   const seqRef = useRef<{ from: number; to: number; dur: number; bell: number }[]>([]);
   const seqIdx = useRef(0);
   const buildSeq = () => {
-    const total = len + home; // 0 → … → 0 (full loop) → … → home
+    const runIn = (home - start + len) % len; // extra steps past the full loop to reach home
+    const total = len + runIn; // start → … → start (full loop) → … → home
     return Array.from({ length: total }, (_, s) => {
       const t = total <= 1 ? 1 : s / (total - 1);
       const bell = Math.sin(Math.PI * t); // 0 at the ends, 1 in the middle
-      return { from: s % len, to: (s + 1) % len, dur: 0.2 - 0.15 * bell, bell };
+      return {
+        from: (start + s) % len,
+        to: (start + s + 1) % len,
+        dur: 0.2 - 0.15 * bell,
+        bell,
+      };
     });
   };
 
@@ -147,11 +161,10 @@ export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
   }, [ready]);
 
   const step = (dir: "next" | "prev") => {
-    // a real tap takes over from the opening riffle
-    if (introRef.current) {
-      introRef.current = false;
-      setIntro(false);
-    }
+    // navigation is disabled while the opening riffle plays (see the buttons'
+    // `disabled={intro}` below, which covers pointer input; this covers the
+    // keyboard path, which bypasses that attribute entirely)
+    if (introRef.current) return;
     // if a fold is already running, snap it done and turn from where it landed
     const base = flip ? flip.to : current;
     if (flip) setCurrent(flip.to);
@@ -201,7 +214,12 @@ export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
         </filter>
       </svg>
       <div className="sb-stage">
-        <button className="sb-arrow left" onClick={prev} aria-label="previous page">
+        <button
+          className="sb-arrow left"
+          onClick={prev}
+          disabled={intro}
+          aria-label="previous page"
+        >
           <Chevron dir="left" />
         </button>
 
@@ -319,11 +337,28 @@ export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
           {/* tap zones are pointer-only affordances: keyboard users have the
               arrow buttons and arrow-key paging, so these stay out of the tab
               order (a focus ring around half the book helps no one) */}
-          <button className="sb-zone sb-prev" onClick={prev} tabIndex={-1} aria-hidden="true" />
-          <button className="sb-zone sb-next" onClick={next} tabIndex={-1} aria-hidden="true" />
+          <button
+            className="sb-zone sb-prev"
+            onClick={prev}
+            disabled={intro}
+            tabIndex={-1}
+            aria-hidden="true"
+          />
+          <button
+            className="sb-zone sb-next"
+            onClick={next}
+            disabled={intro}
+            tabIndex={-1}
+            aria-hidden="true"
+          />
         </div>
 
-        <button className="sb-arrow right" onClick={next} aria-label="next page">
+        <button
+          className="sb-arrow right"
+          onClick={next}
+          disabled={intro}
+          aria-label="next page"
+        >
           <Chevron dir="right" />
         </button>
       </div>
