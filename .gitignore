@@ -6,3 +6,5 @@ out/
 next-env.d.ts
 .vercel
 .env*
+sketchbook-src/*
+!sketchbook-src/README.md
