@@ -17,10 +17,10 @@ const futura = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://spacemark3.github.io/personalportfolio/"),
   title: "Mark Andro",
-  description: "software architect / artist / jack of all trades",
+  description: "software engineer / artist / jack of all trades",
   openGraph: {
     title: "Mark Andro",
-    description: "software architect / artist / jack of all trades",
+    description: "software engineer / artist / jack of all trades",
     url: "https://spacemark3.github.io/personalportfolio/",
   },
 };

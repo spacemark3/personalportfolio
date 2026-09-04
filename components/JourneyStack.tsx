@@ -30,10 +30,9 @@ const Arrow = () => (
 );
 
 export default function JourneyStack({ chapters }: { chapters: JourneyChapter[] }) {
-  // the first entry starts open — a live example of the arrow rotated into
-  // its "expanded" position, so the closed ones below read as clickable
-  const firstId = chapters[0]?.entries.length ? `${chapters[0].label}-0` : null;
-  const [open, setOpen] = useState<string | null>(firstId);
+  // the shelf opens shut — every book is a closed spine until one is pulled,
+  // so the page lands as one unbroken run of bars rather than a sprung panel
+  const [open, setOpen] = useState<string | null>(null);
   const uid = useId();
 
   // Escape closes the open book, matching the nav panel and the project card
@@ -61,6 +60,11 @@ export default function JourneyStack({ chapters }: { chapters: JourneyChapter[] 
             const panelId = `${uid}-${i}-${chapter.label.replace(/\W+/g, "")}`;
             const spineId = `${panelId}-spine`;
             const hue = bookHue(bookIndex++);
+            // which line gets the large type — the role by default, the
+            // company where the chapter asks for it (see JourneyChapter.lead)
+            const leadsPlace = chapter.lead === "place";
+            const lead = leadsPlace ? e.place : e.title;
+            const sub = leadsPlace ? e.title : e.place;
 
             return (
               <article
@@ -81,8 +85,8 @@ export default function JourneyStack({ chapters }: { chapters: JourneyChapter[] 
                     <span className="spine-lead">
                       <Arrow />
                       <span className="spine-text">
-                        <span className="spine-title">{e.title}</span>
-                        <span className="spine-place">{e.place}</span>
+                        <span className="spine-title">{lead}</span>
+                        <span className="spine-place">{sub}</span>
                       </span>
                     </span>
                     <span className="spine-when">
@@ -103,8 +107,8 @@ export default function JourneyStack({ chapters }: { chapters: JourneyChapter[] 
                   <div className="leaf-clip">
                     <div className="leaf-inner" inert={!isOpen}>
                       <p className="leaf-when">{e.span}</p>
-                      <p className="leaf-title">{e.title}</p>
-                      <p className="leaf-place">{e.place}</p>
+                      <p className="leaf-title">{lead}</p>
+                      <p className="leaf-place">{sub}</p>
                       {e.subtitle && <p className="leaf-scope">{e.subtitle}</p>}
                       <p className="leaf-body">{e.body}</p>
                       {e.note && <p className="leaf-note">{e.note}</p>}

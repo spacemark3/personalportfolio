@@ -12,7 +12,7 @@ import { site } from "@/content/content";
 export default function SiteNav({
   active,
 }: {
-  active?: "journey" | "about" | "play" | "inspiration";
+  active?: "journey" | "about" | "inspiration";
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -61,9 +61,6 @@ export default function SiteNav({
       <nav id="site-menu" data-open={open || undefined}>
         <Link href="/journey" aria-current={active === "journey" ? "page" : undefined}>
           {site.nav.work}
-        </Link>
-        <Link href="/play" aria-current={active === "play" ? "page" : undefined}>
-          {site.nav.play}
         </Link>
         <Link href="/about" aria-current={active === "about" ? "page" : undefined}>
           about

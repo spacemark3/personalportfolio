@@ -562,7 +562,7 @@ section {
   font-size: clamp(56px, 11vw, 118px);
   letter-spacing: var(--track-display);
   color: var(--accent);
-  filter: blur(3px); /* pushed into the background, out of focus */
+  filter: blur(2px); /* pushed into the background, out of focus */
   text-align: center;
   line-height: 1;
   white-space: nowrap;
@@ -1138,27 +1138,6 @@ main.dark .inspo {
   white-space: nowrap;
 }
 
-/* ---------- play index ---------- */
-
-.play-list {
-  columns: 3;
-  column-gap: 14px;
-  width: var(--band);
-  margin-inline: calc((100% - var(--band)) / 2);
-}
-
-@media (max-width: 1100px) {
-  .play-list {
-    columns: 2;
-  }
-}
-
-@media (max-width: 700px) {
-  .play-list {
-    columns: 1;
-  }
-}
-
 /* Apple-style squircle corners where supported (Chromium 139+);
    everyone else keeps the plain radius */
 .work-card .shot {
@@ -1166,11 +1145,6 @@ main.dark .inspo {
 }
 
 /* labels sit on the same column edge as the grids — nothing to align */
-
-/* category sections page down the play index with section-scale air */
-.play-section + .play-section {
-  margin-top: clamp(64px, 11vh, 140px);
-}
 
 /* about on its own page: vertically settled, not glued to the header */
 .about-page {
@@ -1253,9 +1227,18 @@ main.dark .inspo {
    shelf" version above it; that version is gone, so there is only one
    design to keep in sync now. */
 
-/* no shelf to stand wide for any more — the site's usual reading column */
+/* the opening line is this page's title, so it is centered and given the
+   whole column instead of the 46ch reading measure the body copy uses — at
+   desktop width that lands it on a single line. Deliberately not nowrap:
+   the column clears the sentence by only a few dozen pixels, and a font
+   rendering a touch wide would open a horizontal scroll track. If it does
+   wrap, balance splits it into even lines rather than a long one plus an
+   orphan. */
 .jr-open {
-  max-width: 46ch;
+  max-width: none;
+  margin-inline: auto;
+  text-align: center;
+  text-wrap: balance;
   font-size: 17px;
   line-height: 1.8;
   letter-spacing: 0.02em;
@@ -1376,8 +1359,8 @@ main.dark .inspo {
   min-width: 0;
 }
 
-/* points right when shut, rotates to point down when open — the same
-   rotation on every entry, so an already-open first book teaches the rest */
+/* points right when shut, rotates to point down when open — nothing starts
+   open, so this arrow and the hover tint are what mark a spine as pullable */
 .spine-arrow {
   flex: none;
   color: var(--ink-soft);
