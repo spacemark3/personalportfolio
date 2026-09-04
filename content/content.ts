@@ -12,7 +12,7 @@ export type Pic = { src: string; w: number; h: number };
 export const site = {
   name: "Mark Andro",
   footer: "© Mark Andro 2026",
-  nav: { work: "journey", play: "craft", inspiration: "inspiration" },
+  nav: { work: "journey", inspiration: "inspiration" },
   labels: { projects: "Journey" },
 };
 
@@ -49,11 +49,19 @@ export type JourneyEntry = {
   note?: string; // optional aside: credential ID, honours, the stack
 };
 
-export type JourneyChapter = { label: string; lede?: string; entries: JourneyEntry[] };
+// `lead` picks which line the spine sets in the large type. Chapters default
+// to the role ("title"); a chapter set to "place" leads with the company
+// instead, for work whose interest is where it happened, not the job title.
+export type JourneyChapter = {
+  label: string;
+  lede?: string;
+  lead?: "title" | "place";
+  entries: JourneyEntry[];
+};
 
 // TODO: placeholder copy throughout — replace every entry below with your own.
 export const journey = {
-  lede: "I am the museum of the people I have loved, they expanded my soul and this is my journey.",
+  lede: "I treasure moments and people I encounter, they expand my soul and this is my journey.",
   chapters: [
     {
       label: "Studies & Certifications",
@@ -74,8 +82,12 @@ export const journey = {
         },
       ],
     },
+    // Work is split IT / everything else rather than run as one chronology.
+    // The résumé this page exists to support is a software one, so the IT
+    // chapter stands on its own at the head of the work; the jobs that paid
+    // for the studies keep their place below it, told as one run.
     {
-      label: "Work",
+      label: "Information Technology",
       lede: "Italy, Milan",
       entries: [
         {
@@ -86,11 +98,26 @@ export const journey = {
           body: "Developed key features to streamline production workflows and accelerate testing. Engineered, tested, and documented system functionalities to ensure high reliability while enhancing WCAG compliance and platform accessibility.",
         },
         {
-          title: "Web developer - internship",
+          title: "Web developer",
           subtitle: "Development of responsive interfaces for websites ",
           place: "AGM Solutions",
           span: "2023 - 2024",
           body: "Developed responsive web applications and managed relational databases using HTML, CSS, JavaScript, and PHP. Built a full-stack CRUD photo album application using Laravel to master MVC architecture and modern backend design.",
+        },
+      ],
+    },
+    {
+      label: "Other work",
+      lede: "Italy, Milan",
+      lead: "place",
+      entries: [
+        {
+          title: "Kitchen crew member",
+          subtitle: "Customer service and food preparation",
+          place: "Jollibee",
+          span: "during studies",
+          body: "Prepared food to standard as part of the production team while studying full-time, holding quality and speed together through daily service and keeping to operational standards under the pace of a busy kitchen.",
+          note: "Best in Production, 2024 · Crew Member of the Month, September 2024",
         },
         {
           title: "Customer care",
@@ -99,10 +126,10 @@ export const journey = {
           span: "2022 - 2023",
           body: "Provided customer support and assistance for clients calling in, ensuring their needs were met and issues resolved promptly. Developed strong communication and problem-solving skills while maintaining a high level of customer satisfaction.",
         },
-         {
+        {
           title: "Restaurant crew member",
           subtitle: "Customer service and food preparation",
-          place: "Burger King Italy",
+          place: "Burger King",
           span: "2021 - 2022",
           body: "Provided excellent customer service and assisted in food preparation, ensuring a positive dining experience for customers. Developed teamwork and time management skills while working in a fast-paced environment.",
         },
@@ -150,20 +177,19 @@ const mounted = (file: string, title: string, flags?: SketchFlags): SketchPage =
 });
 
 export const sketchbook: SketchPage[] = [
-  mounted("i want to live", " No one is born in this world to be alone!"),
+  mounted("i want to live", "\"I want to live!\""),
   mounted("助けて", "\"助けて\""),
-  mounted("eustass", " When you hit rock bottom, there is nowhere to go but up"),
-  mounted("i am proud of you", "\n One day, I will make you proud \n"),
+  mounted("eustass", "Laguna"),
+  mounted("i am proud of you", "\n I will make you proud \n"),
   mounted("sasuke", " This is the last time "),
+  mounted("konan", "Konan - Itachi"),
+  mounted("kisame", "Kisame - Sasori"),
   mounted("notes", "\" I will never forget you\""),
-  mounted("kimono", " Sketches"),
-  mounted("fly", "To pimp a caterpillar"),
+  mounted("kimono", "Diwata"),
+  mounted("megumi", "Megumi"),
+  mounted("fly", "To Pimp A Caterpillar"),
   mounted("prisoner of the mind", "Prisoner Of The Mind"),
-  // `start` isn't flagged, so the opening riffle begins at the first spread
-  // above; it loops through every page once and lands here
-  mounted("thinking of the blue sky", "Thinking Of The Blue Sky", { home: true }),
+  mounted("bakugo", "Bakugo - Deku"),
+  mounted("thinking of the blue sky", "青い空が好きです", { home: true }),
 ];
 
-// ---------- play ----------
-export type PlayCard = { title: string; href: string; note: string; thumb: Pic; reel?: string };
-export const playSections: { label: string; cards: PlayCard[] }[] = [];
