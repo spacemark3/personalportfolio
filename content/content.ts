@@ -23,9 +23,9 @@ export const about = {
   // TODO: placeholder copy — write your own bio here
   bio: [
     { text: "Mark Andro is a software architect and artist. " },
-    { text: "This paragraph is placeholder copy. Segments given an " },
-    { text: "href", href: "#" },
-    { text: " render as bolded links." },
+    { text: "He has a passion for creating" },
+    { text: "" },
+    { text: "" },
   ] as { text: string; href?: string }[],
   // TODO: placeholder targets — swap in your own profiles and address
   socials: [
