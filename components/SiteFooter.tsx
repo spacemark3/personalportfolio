@@ -8,25 +8,6 @@ export default function SiteFooter() {
     <footer className="site-foot">
       <p className="site-foot-c">{site.footer}</p>
       <nav className="site-foot-cols" aria-label="footer">
-        <div>
-          {about.socials.map((s) => (
-            <a
-              key={s.type}
-              href={s.href}
-              target={s.type === "email" ? undefined : "_blank"}
-              rel="noreferrer"
-            >
-              {s.label}
-            </a>
-          ))}
-        </div>
-        <div>
-          <Link href="/">Home</Link>
-          <Link href="/journey">{site.nav.work}</Link>
-          <Link href="/play">Play</Link>
-          <Link href="/about">About</Link>
-          <Link href="/inspiration">Inspiration</Link>
-        </div>
       </nav>
     </footer>
   );
