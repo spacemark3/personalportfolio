@@ -59,7 +59,14 @@ const Chevron = ({ dir }: { dir: "left" | "right" }) => (
   </svg>
 );
 
-export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
+export default function Sketchbook({
+  pages,
+  labels,
+}: {
+  pages: SketchPage[];
+  /** the two arrow buttons' accessible names, in the page's language */
+  labels: { previous: string; next: string };
+}) {
   const len = pages.length;
 
   // opening sequence: riffle fast through the whole book, beginning at the
@@ -218,7 +225,7 @@ export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
           className="sb-arrow left"
           onClick={prev}
           disabled={intro}
-          aria-label="previous page"
+          aria-label={labels.previous}
         >
           <Chevron dir="left" />
         </button>
@@ -357,7 +364,7 @@ export default function Sketchbook({ pages }: { pages: SketchPage[] }) {
           className="sb-arrow right"
           onClick={next}
           disabled={intro}
-          aria-label="next page"
+          aria-label={labels.next}
         >
           <Chevron dir="right" />
         </button>

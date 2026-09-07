@@ -4,18 +4,27 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { site } from "@/content/content";
+import { getDictionary, localePath, type Locale } from "@/lib/i18n";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-// Shared fixed header: name left; nav + social links right. Every entry is a
-// real route, so nothing here scrolls the page or leaves a #hash behind.
+// Shared fixed header: name left; nav + language switch right. Every entry is
+// a real route, so nothing here scrolls the page or leaves a #hash behind.
 // On phones the links collapse behind a hamburger — same markup, presented
-// as a panel by CSS, so there is only ever one list of links to maintain.
+// as a panel by CSS, so there is only ever one list of links to maintain
+// (the switcher collapses with them, for the same reason).
+//
+// Every href goes through localePath, so a link never drops the reader out
+// of the language they are reading in.
 export default function SiteNav({
+  locale,
   active,
 }: {
+  locale: Locale;
   active?: "journey" | "about" | "inspiration";
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const t = getDictionary(locale);
 
   // a tapped link navigates without unmounting the header, so close on route
   // change rather than wiring an onClick onto every link
@@ -31,7 +40,7 @@ export default function SiteNav({
 
   return (
     <header className={`top${open ? " menu-open" : ""}`}>
-      <Link href="/" className="name">
+      <Link href={localePath(locale)} className="name">
         {site.name}
       </Link>
 
@@ -41,7 +50,7 @@ export default function SiteNav({
         className="nav-toggle"
         aria-expanded={open}
         aria-controls="site-menu"
-        aria-label={open ? "Close menu" : "Open menu"}
+        aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
         onClick={() => setOpen((o) => !o)}
       >
         <span className="nav-toggle-bars" aria-hidden />
@@ -59,15 +68,25 @@ export default function SiteNav({
       )}
 
       <nav id="site-menu" data-open={open || undefined}>
-        <Link href="/journey" aria-current={active === "journey" ? "page" : undefined}>
-          {site.nav.work}
+        <Link
+          href={localePath(locale, "/journey")}
+          aria-current={active === "journey" ? "page" : undefined}
+        >
+          {t.nav.journey}
         </Link>
-        <Link href="/about" aria-current={active === "about" ? "page" : undefined}>
-          about
+        <Link
+          href={localePath(locale, "/about")}
+          aria-current={active === "about" ? "page" : undefined}
+        >
+          {t.nav.about}
         </Link>
-        <Link href="/inspiration" aria-current={active === "inspiration" ? "page" : undefined}>
-          {site.nav.inspiration}
+        <Link
+          href={localePath(locale, "/inspiration")}
+          aria-current={active === "inspiration" ? "page" : undefined}
+        >
+          {t.nav.inspiration}
         </Link>
+        <LanguageSwitcher locale={locale} />
       </nav>
     </header>
   );

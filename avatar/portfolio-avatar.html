@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portfolio Avatar — 3D</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+    "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js",
+    "three/addons/exporters/OBJExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js",
+    "three/addons/exporters/GLTFExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js"
+  },
+  "integrity": {
+    "https://unpkg.com/three@0.184.0/build/three.module.js": "sha384-8FCZ1eVO6it4+pbec2aDtnTrwjWXZLJRC+MAGCIPDgsYnUrl/E0A2YlF8ioMKI/J",
+    "https://unpkg.com/three@0.184.0/build/three.core.js": "sha384-dw2ooPewaEIrAgl6oFDBmmBWCE9oW9LxRGcfwZ0hLvEprzo202wXl7vCYHRlSnOT",
+    "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js": "sha384-4rziNxOBZKQ69i+w+f89KJ55TCYquwchVbByQwmaOeIOXdOU2PLDn3kOfXHwIJC9",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js": "sha384-nbwtoZENJD3Vq+ACK0CuGQdPMuDWHkamC2KJD70EV5nfg6jQjfppKOea07YJN+N3",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js": "sha384-VofkvpG6HERhFCYbsUOHeNXBCqID2nfqkQqnVzE1jc/oPcz+qJ13ADdXH08hE+cQ"
+  }
+}
+</script>
+<style>
+  html, body { margin: 0; height: 100%; background: #f4f2ec; }
+  three-d-stage { display: block; width: 100vw; height: 100vh; }
+  three-d-stage:not(:defined) { visibility: hidden; }
+</style>
+</head>
+<body>
+<three-d-stage name="portfolio-avatar" background="#f4f2ec"></three-d-stage>
+<script src="three-d-stage.js"></script>
+<script type="module">
+  import { buildAvatar } from './avatar.js';
+
+  const stage = document.querySelector('three-d-stage');
+  await stage.ready;
+
+  const { avatar, parts } = buildAvatar();
+  stage.setObject(avatar);
+
+  // Character framing: eye-level three-quarter view.
+  const cam = stage._camera, controls = stage._controls;
+  controls.target.set(0, 0.76, 0);
+  cam.position.set(0.8, 0.92, 1.9);
+  controls.update();
+
+  // Idle animation — the stage renders every frame, so mutating
+  // transforms here is enough.
+  const base = {
+    bodyY: parts.body.position.y,
+    headY: parts.head.position.y,
+    hands: parts.hands.children.map((h) => h.position.y),
+  };
+  const t0 = performance.now();
+  (function idle() {
+    const t = (performance.now() - t0) / 1000;
+    const breathe = Math.sin(t * 1.6);
+
+    parts.body.position.y = base.bodyY + breathe * 0.006;
+    parts.body.scale.y = 1 + breathe * 0.012;
+
+    parts.head.position.y = base.headY + breathe * 0.009;
+    parts.head.rotation.y = Math.sin(t * 0.55) * 0.26;
+    parts.head.rotation.z = Math.sin(t * 0.55 + 1.2) * 0.045;
+    parts.head.rotation.x = Math.sin(t * 0.9) * 0.02;
+
+    parts.hands.children.forEach((h, i) => {
+      const s = i === 0 ? -1 : 1;
+      h.position.y = base.hands[i] + Math.sin(t * 1.6 + i * 0.7) * 0.012;
+      h.rotation.z = Math.sin(t * 1.1 + i) * 0.12 * s;
+    });
+
+    requestAnimationFrame(idle);
+  })();
+</script>
+</body>
+</html>

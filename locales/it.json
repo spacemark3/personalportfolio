@@ -1,0 +1,52 @@
+{
+  "site": {
+    "footer": "© Mark Andro 2026"
+  },
+  "nav": {
+    "journey": "esperienza",
+    "about": "profilo",
+    "inspiration": "ispirazione",
+    "openMenu": "apri",
+    "closeMenu": "chiudi",
+    "skipToContent": "vai al contenuto",
+    "footerLabel": "piè di pagina"
+  },
+  "language": {
+    "label": "Lingua",
+    "switchTo": "English"
+  },
+  "about": {
+    "avatarLabel": "Un'illustrazione 3D di Mark Andro",
+    "photoAlt": "Un ritratto fotografico di Mark Andro"
+  },
+  "journey": {
+    "contents": "Il mio percorso",
+    "contentsLabel": "Indice del percorso",
+    "empty": "IN LAVORAZIONE"
+  },
+  "sketchbook": {
+    "previous": "pagina precedente",
+    "next": "pagina successiva"
+  },
+  "inspiration": {
+    "empty": "IN LAVORAZIONE"
+  },
+  "meta": {
+    "home": {
+      "title": "Mark Andro",
+      "description": "software engineer / artista / tuttofare"
+    },
+    "about": {
+      "title": "Chi sono — Mark Andro",
+      "description": "Software architect e artista, di base a Milano."
+    },
+    "journey": {
+      "title": "Percorso — Mark Andro",
+      "description": "Il lavoro, gli studi e i mestieri nel mezzo — raccontati in ordine."
+    },
+    "inspiration": {
+      "title": "Ispirazione — Mark Andro",
+      "description": "Le immagini e il lavoro che tengono in movimento tutto il resto."
+    }
+  }
+}

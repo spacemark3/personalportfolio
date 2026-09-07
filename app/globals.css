@@ -7,6 +7,9 @@
      element: header, section labels, work/play grids, footer. Grows
      past 1560px content width, never collapses below ~16px. */
   --edge: max(calc((100vw - 1560px) / 2), clamp(16px, 2.5vw, 64px));
+  /* the inner pages' own gutter, a token because things positioned out of
+     the flow (the about avatar) have to line up with the column it makes */
+  --page-pad: clamp(28px, 5vw, 72px);
   --band: calc(100vw - var(--edge) * 2);
   --paper: #e6e9ed; /* cool light gray */
   --ink: #1d1f22;
@@ -17,6 +20,10 @@
   /* the hero name's green, promoted to a token: the site's one accent.
      Ink on it runs ~11:1, so it carries body copy without help. */
   --accent: #8fd9a1;
+  /* the same green in channel form. Tints of the accent (the journey's open
+     book, its index marker, a spine under the cursor) mix from this, so
+     there is one green on the site and not a palette that drifts. */
+  --accent-hsl: 135 49% 71%;
   --font: var(--font-futura), "Futura", "Avenir Next", system-ui, sans-serif;
   /* one tracking scale for the whole site */
   --track-caps: 0.24em; /* small uppercase labels */
@@ -164,9 +171,9 @@ main.dark .top::before {
 
 .page {
   min-height: 100dvh;
-  padding: clamp(28px, 5vw, 72px);
+  padding: var(--page-pad);
   /* clear the fixed header */
-  padding-top: calc(clamp(28px, 5vw, 72px) + 56px);
+  padding-top: calc(var(--page-pad) + 56px);
   padding-bottom: 10vh;
   max-width: 980px; /* smaller against the screen = more air */
   margin: 0 auto;
@@ -441,13 +448,74 @@ section {
 
 /* ---------- about ---------- */
 
+/* the portrait and the bio, sized to content and centred together as one
+   group. The 3D avatar is not in here — it left the grid for the page's
+   bottom-right corner (see .avatar-stage). */
 .about {
   display: grid;
-  grid-template-columns: auto auto; /* bio + headshot sized to content... */
-  justify-content: center; /* ...and centered together as one group */
-  align-items: center; /* headshot centers on the paragraph's midline */
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center; /* the photo centres on the paragraph's midline */
   gap: clamp(24px, 4vw, 44px);
   margin-top: clamp(16px, 4vh, 48px);
+}
+
+/* The photo, cropped to 2:3 at build time (public/about/portrait.webp) —
+   object-fit only guards against the box and the file disagreeing. Same 8px
+   radius and shadow as the work thumbnails, so images speak one language
+   across the site. A fixed 100x150 at every width: the 3D figure in the
+   corner needs the height more than the portrait does, and a photo this small
+   reads as a stamp beside the bio rather than a headshot competing with it. */
+.about-photo {
+  width: 100px;
+  height: 150px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(20, 22, 30, 0.05), 0 12px 32px rgba(20, 22, 30, 0.08);
+}
+
+/* Apple-style squircle where supported, as on .work-card .shot */
+.about-photo {
+  corner-shape: squircle;
+}
+
+/* Desktop: the avatar leaves the flow for the page's right-hand corner,
+   standing over the footer — the page's figure rather than a headshot pinned
+   to the bio. Its containing block is .about-shell (the <main>), and it
+   aligns to --page-pad so its box shares the reading column's right edge.
+   On a phone it returns to the flow, just above the footer (see below).
+   The canvas fills it and fades in on its first frame — no spinner, nothing
+   announcing itself; the box is sized in CSS before three.js has loaded, so
+   nothing reflows when it arrives.
+   A standing figure is about 1:1.5, so the box is too: the camera solves its
+   distance from this box (fit() in Avatar.tsx), and a box shaped like the
+   figure puts the whole of it on screen with the least empty paper. */
+.avatar-stage {
+  position: absolute;
+  /* a step in from the gutter, so a raised waving arm still has paper
+     around it rather than the page edge */
+  right: calc(var(--page-pad) + var(--s-6));
+  bottom: 0;
+  width: clamp(130px, 17vw, 210px);
+  aspect-ratio: 1 / 1.5;
+  /* decoration over the footer: it must never eat a click or a text
+     selection meant for what is underneath it */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.7s var(--ease-out-strong);
+}
+
+.avatar-stage[data-ready] {
+  opacity: 1;
+}
+
+.avatar-stage canvas {
+  width: 100%;
+  height: 100%;
+  /* the renderer owns the buffer size; CSS owns the box */
+  display: block;
 }
 
 .about-text .bio {
@@ -460,9 +528,30 @@ section {
 }
 
 @media (max-width: 560px) {
+  /* Phone: the photo sits IN the text rather than in a column of its own —
+     a float, so the opening lines run beside it and the rest of the bio
+     closes underneath, the way a photo sits in a printed column. flow-root
+     rather than block so the float stays inside the section instead of
+     hanging past it when the bio is short. */
   .about {
-    grid-template-columns: 1fr;
-    gap: var(--s-5);
+    display: flow-root;
+  }
+
+  .about-photo {
+    float: left;
+    /* 2px down, so the photo's top edge sits on the first line's cap height
+       rather than its line box; the right and bottom are the text's gutter */
+    margin: 2px var(--s-4) var(--s-3) 0;
+  }
+
+  /* Phone: back in the flow, standing between the bio and the footer rather
+     than over it — there is no corner to spare at this width. Right-aligned
+     and shrunk to a miniature; same 1:1.5 box, so the camera solve frames the
+     same head-to-shoes shot, only small. */
+  .avatar-stage {
+    position: static;
+    width: clamp(72px, 20vw, 100px);
+    margin: var(--s-6) var(--s-4) 0 auto;
   }
 }
 
@@ -520,7 +609,7 @@ section {
   align-content: center;
   /* cancel the page's top padding so the hero spans the full first screen
      and its content centers on the true middle of the viewport */
-  margin-top: calc(-1 * (clamp(28px, 5vw, 72px) + 56px));
+  margin-top: calc(-1 * (var(--page-pad) + 56px));
   min-height: 100svh;
   /* the kicker + name peek above the book outweigh the caption below it;
      this rebalances so the BOOK itself sits on the viewport's centerline */
@@ -1148,8 +1237,49 @@ main.dark .inspo {
 
 /* about on its own page: vertically settled, not glued to the header */
 .about-page {
-  min-height: calc(60dvh);
   align-content: center;
+}
+
+/* The containing block for the avatar in the corner — and a column, so the
+   footer it stands over settles at the bottom of the first screen. The bio
+   takes the leftover height and centres inside it; a min-height on the
+   section would do the same job on a tall window but push the footer, and
+   the avatar with it, off the bottom of a short one. */
+.about-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* half the usual clearance under the fixed header. This page is the one
+     that has to fit the bio, the portrait and the whole standing figure on
+     one screen, and the header is 56px of air it can borrow from. */
+  padding-top: calc(var(--page-pad) + 28px);
+}
+
+/* grow, never shrink: a long bio makes the page taller rather than spilling */
+.about-shell .about-page {
+  flex: 1 0 auto;
+}
+
+/* The centred content stops short of the avatar's corner. The figure is out
+   of the flow at the bottom right, so nothing else knows it is there; this
+   is the room it needs on a short window, and only where it is out of the
+   flow — on a phone it stands in the column like everything else. */
+@media (min-width: 561px) {
+  .about-shell .about-page {
+    padding-bottom: clamp(40px, 11vh, 104px);
+  }
+}
+
+/* Phone: the section is flow-root there (the photo floats into the bio), so
+   the grid's align-content no longer centres anything — auto margins in this
+   flex column do it instead. Here rather than in the phone block above,
+   because that block comes first in the file and a media query carries no
+   specificity of its own. */
+@media (max-width: 560px) {
+  .about-shell .about-page {
+    flex: 0 0 auto;
+    margin-block: auto;
+  }
 }
 
 /* ---------- footer (Michelle-style: rule, ©, two link columns) ---------- */
@@ -1237,13 +1367,175 @@ main.dark .inspo {
 .jr-open {
   max-width: none;
   margin-inline: auto;
-  text-align: center;
+  text-align: left;
   text-wrap: balance;
-  font-size: 17px;
+  font-size: 20px;
   line-height: 1.8;
   letter-spacing: 0.02em;
   color: var(--ink-soft);
   margin-bottom: clamp(48px, 7vh, 88px);
+}
+
+/* ---- the index: the book's contents, held in the left margin ---- */
+
+/* Two columns from 980px up, where the page also widens to make room for
+   them; one column below that. The index is the only thing that moves — it
+   is dropped on narrow screens rather than restacked above the shelf,
+   because at that width the run of shut spines already IS the contents:
+   every entry, in order, one line each. */
+.journey-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.jr-index {
+  display: none;
+}
+
+@media (min-width: 980px) {
+  .page.journey {
+    max-width: 1160px;
+  }
+
+  .journey-layout {
+    grid-template-columns: minmax(168px, 216px) minmax(0, 1fr);
+    gap: clamp(32px, 4.5vw, 72px);
+    align-items: start;
+  }
+
+  /* stays with the reader down the whole shelf; the max-height keeps a long
+     contents from running past the fold, scrolling inside itself instead */
+  .jr-index {
+    display: block;
+    position: sticky;
+    top: 104px;
+    max-height: calc(100dvh - 148px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: var(--s-4);
+    /* the scrollbar is a hairline, not a chrome widget: same weight and ink
+       as the rail the entries hang off, so a scrolling index still reads as
+       two thin lines and some type. Firefox takes the two properties below;
+       WebKit/Blink take the ::-webkit- rules. */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(29, 31, 34, 0.22) transparent;
+  }
+
+  .jr-index::-webkit-scrollbar {
+    width: 2px; /* 1px reads as elegant and drags as impossible; 2px is both */
+  }
+
+  .jr-index::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .jr-index::-webkit-scrollbar-thumb {
+    background: rgba(29, 31, 34, 0.22);
+    transition: background 0.3s var(--ease-out-strong);
+  }
+
+  /* darkens only while the reader is in the index — at rest it is barely
+     there, which is the point */
+  .jr-index:hover::-webkit-scrollbar-thumb {
+    background: rgba(29, 31, 34, 0.4);
+  }
+}
+
+.jr-index-h {
+  font-size: 11px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.jr-index-group {
+  margin-top: var(--s-5);
+}
+
+.jr-index-label {
+  font-size: 10px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: rgba(29, 31, 34, 0.5);
+  margin-bottom: var(--s-3);
+}
+
+/* the rail every entry hangs off — the same hairline as the shelf's own
+   borders, so index and shelf read as one drawing */
+.jr-index-list {
+  list-style: none;
+  border-left: 1px solid var(--hairline);
+}
+
+.jr-index-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px var(--s-3) 7px var(--s-4);
+  color: var(--ink-soft);
+  transition: background 0.35s var(--ease-out-strong), color 0.35s var(--ease-out-strong);
+}
+
+.jr-index-item:hover {
+  color: var(--ink);
+  background: rgba(29, 31, 34, 0.05);
+}
+
+/* the place-keeper: the entry the reader is level with takes the accent, so
+   the index says which book is open in the shelf's own colour */
+.jr-index-item[data-here] {
+  color: var(--ink);
+  /* 0.45, not the 0.62 the lighter per-book tint needed — the accent is a
+     darker green, and a marker should not outweigh the book it points at */
+  background: hsl(var(--accent-hsl) / 0.45);
+}
+
+.jr-index-item[data-here]:hover {
+  background: hsl(var(--accent-hsl) / 0.45);
+}
+
+/* the point on the rail. Shut: nothing. Marked: a filled bead sitting on the
+   hairline, a deeper cut of the accent so it holds against paper at 6px. */
+.jr-index-dot {
+  position: absolute;
+  left: -3.5px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(135 44% 52%);
+  transform: scale(0);
+  transition: transform 0.4s var(--ease-out-strong);
+}
+
+.jr-index-item:hover .jr-index-dot {
+  transform: scale(0.55);
+}
+
+.jr-index-item[data-here] .jr-index-dot {
+  transform: scale(1);
+}
+
+.jr-index-lead {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.jr-index-when {
+  display: block;
+  font-size: 10px;
+  letter-spacing: var(--track-nav);
+  text-transform: uppercase;
+  color: rgba(29, 31, 34, 0.55);
+}
+
+.jr-index-item[data-here] .jr-index-when {
+  color: rgba(29, 31, 34, 0.72);
 }
 
 /* ---- the shelf ---- */
@@ -1293,6 +1585,9 @@ main.dark .inspo {
   flex-direction: column;
   align-items: stretch;
   border: 1px solid var(--hairline);
+  /* matches READING_LINE in JourneyStack.tsx, so an #anchor landing (JS off,
+     or a shared link) rests exactly where the index's own jump does */
+  scroll-margin-top: 132px;
   transition: background 0.5s var(--ease-out-strong);
 }
 
@@ -1303,10 +1598,10 @@ main.dark .inspo {
 /* the pulled book is the one moment of colour on the page: the same green
    the hero name is set in, so the shelf blooms rather than lights up */
 .book[data-open] {
-  /* --book-hue is set inline per book in JourneyStack.tsx (golden-angle
-     spaced); 46%/84% is verified to hold WCAG AA contrast at every hue */
-  background: hsl(var(--book-hue) 46% 84%);
-  border-color: hsl(var(--book-hue) 46% 84%);
+  /* one green for every book, whichever is pulled: the shelf is a shelf,
+     not a paint chart, and ink on the accent runs ~11:1 */
+  background: var(--accent);
+  border-color: var(--accent);
   position: relative;
   z-index: 1;
 }
@@ -1339,7 +1634,7 @@ main.dark .inspo {
 }
 
 .spine:hover {
-  background: hsl(var(--book-hue) 46% 84% / 0.22);
+  background: hsl(var(--accent-hsl) / 0.22);
 }
 
 .book[data-open] .spine:hover {
@@ -1444,8 +1739,7 @@ main.dark .inspo {
   font-size: 11.5px;
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
-  /* 0.72, not 0.66 — needs the extra opacity to clear 4.5:1 against every
-     hue in the per-book palette above, not just the green it used to sit on */
+  /* 0.72, not 0.66 — 0.66 sat just under 4.5:1 on the accent green */
   color: rgba(29, 31, 34, 0.72);
 }
 
@@ -1503,4 +1797,73 @@ main.dark .inspo {
   text-transform: uppercase;
   /* see .leaf-when for why this is 0.72, not 0.66 */
   color: rgba(29, 31, 34, 0.72);
+}
+
+/* ---------- language: the switcher, and the / gate ---------- */
+
+/* EN | IT, last in the header nav. It inherits the nav's own link colours
+   (.top nav a, and [aria-current] for the language being read), so the
+   switcher marks the current language the same way the nav marks the
+   current page — one active state for the whole header. */
+.lang-switch {
+  display: flex;
+  align-items: center;
+  margin-left: var(--s-1);
+  padding-left: var(--s-4);
+  border-left: 1px solid var(--hairline);
+  font-size: 11.5px;
+  letter-spacing: var(--track-caps);
+}
+
+/* the hairline between the two abbreviations — the "|" in EN | IT, drawn
+   rather than typed so it keeps the weight of every other rule on the page */
+.lang-switch-link + .lang-switch-link {
+  margin-left: var(--s-2);
+  padding-left: var(--s-2);
+  border-left: 1px solid var(--hairline);
+}
+
+@media (max-width: 640px) {
+  /* in the collapsed panel it becomes a footer row under the links, the
+     same shape .top-socials takes there */
+  .top nav .lang-switch {
+    justify-content: flex-start;
+    gap: var(--s-1);
+    margin: var(--s-1) 0 0;
+    padding: var(--s-3) 14px var(--s-2);
+    border-left: 0;
+    border-top: 1px solid var(--hairline);
+  }
+}
+
+/* `/` — the language gate. Visible only with JavaScript off (the inline
+   script in app/(redirect)/page.tsx replaces the document before this ever
+   paints), so it is plain on purpose: a name and two links. */
+.lang-gate {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-5);
+  padding: var(--s-6);
+  text-align: center;
+}
+
+.lang-gate-h {
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: var(--track-nav);
+}
+
+.lang-gate-links {
+  display: flex;
+  gap: var(--s-5);
+  font-size: 13px;
+  letter-spacing: var(--track-nav);
+  color: var(--ink-soft);
+}
+
+.lang-gate-links a:hover {
+  color: var(--ink);
 }
