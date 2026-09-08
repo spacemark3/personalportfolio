@@ -91,3 +91,34 @@ export const sketchbook: SketchPage[] = [
   mounted("bakugo", "Bakugo - Deku"),
   mounted("thinking of the blue sky", "青い空が好きです", { home: true }),
 ];
+
+// ---------- inspiration: the people who supported him ----------
+// A wall of photographs behind the closing line, revealed only by the
+// flashlight cursor. `alt` is optional: the wall carries one aria-label of
+// its own (inspiration.wallLabel), so an unnamed photo is decorative rather
+// than unlabelled. No width/height — the tiles are sized by the grid and the
+// images are `fill`.
+//
+// Drop files into public/inspiration/ and add a line each. The page is
+// finished with none of them: the wall is simply empty and the beam still
+// finds the line.
+//
+// The list takes two shapes. ONE entry is a collage already assembled in an
+// image editor, and covers the screen edge to edge — that is the layout the
+// page was drawn against. SEVERAL entries tile into a square mosaic and the
+// browser assembles the collage instead.
+//
+// Sizing follows from which one you pick: a single collage wants ~2000px wide
+// and can afford ~300KB, while mosaic tiles cap at about 190px on screen, so
+// ~600px and ~40KB each. Either way this wall is the page's whole first-paint
+// weight, the way the sketchbook is the home page's.
+export type Person = { src: string; alt?: string };
+
+export const person = (file: string, alt?: string): Person => ({
+  src: asset(`/inspiration/${file}`),
+  ...(alt ? { alt } : {}),
+});
+
+export const people: Person[] = [
+  // person("nonna.webp", "my grandmother"),
+];

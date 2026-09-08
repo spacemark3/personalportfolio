@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- The tab mark: the site's monogram in the site's two colours. Drawn as a
+       path rather than set in Futura, because a favicon has no webfont to load
+       and would fall back to whatever the OS offers. The ground is filled and
+       the letter is knocked out of it, so the mark reads against a tab strip
+       of any colour; the media query swaps the pair the way globals.css does,
+       so it never sinks into a dark browser chrome. -->
+  <style>
+    .ground { fill: #1d1f22 }
+    .mark { stroke: #e6e9ed }
+    @media (prefers-color-scheme: dark) {
+      .ground { fill: #e6e9ed }
+      .mark { stroke: #1d1f22 }
+    }
+  </style>
+  <rect class="ground" width="32" height="32" rx="7" />
+  <path class="mark" d="M8 23V9l8 11 8-11v14" fill="none" stroke-width="3"
+        stroke-linecap="square" stroke-linejoin="miter" />
+</svg>

@@ -5,7 +5,13 @@ import { useEffect, useRef } from "react";
 // A cursor spotlight: everything is darkened except a soft-edged circle that
 // follows the pointer. Pure overlay — pointer-events off, so it never blocks
 // interaction beneath. On touch (no fine pointer) it stays off.
-export default function Spotlight() {
+//
+// What lives here is only the pointer plumbing — the rAF throttle and the
+// --x/--y custom properties. How much it darkens, and how wide the clear
+// circle is, is entirely the class's gradient: `spotlight` dims the page
+// around the cursor, `ip-beam` (inspiration) inverts it into a flashlight
+// that is the only light on the page.
+export default function Spotlight({ className = "spotlight" }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,5 +45,5 @@ export default function Spotlight() {
     };
   }, []);
 
-  return <div ref={ref} className="spotlight" aria-hidden />;
+  return <div ref={ref} className={className} aria-hidden />;
 }

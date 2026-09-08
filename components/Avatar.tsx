@@ -84,12 +84,35 @@ export default function Avatar({ label }: { label: string }) {
       // unmounted while three.js was still downloading — build nothing
       if (cancelled) return;
 
+      // The context is asked for on our own canvas and handed to three.js,
+      // rather than letting the renderer discover the failure for itself.
+      // three.js listens for webglcontextcreationerror and console.errors the
+      // driver's reason before it throws, so a machine with the GPU shut off
+      // — a sandboxed or headless Chrome, a locked-down work laptop — would
+      // print "THREE.WebGLRenderer: A WebGL context could not be created" on
+      // a page that is otherwise perfectly fine. Asking first turns that into
+      // a null we can read quietly.
+      const attrs = { antialias: true, alpha: true };
+      const canvas = document.createElement("canvas");
+      // webgl2 alone: that is the only name three.js itself asks for, so a
+      // browser that answers webgl and nothing else could not have run this
+      // renderer regardless.
+      const gl = canvas.getContext("webgl2", attrs);
+
       let renderer: THREE_T.WebGLRenderer;
       try {
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        if (!gl) throw new Error("no WebGL2 context");
+        // @types/three still types context as the WebGL1 interface, which a
+        // WebGL2 context is not structurally assignable to; the runtime wants
+        // exactly this one.
+        const context = gl as unknown as WebGLRenderingContext;
+        renderer = new THREE.WebGLRenderer({ ...attrs, canvas, context });
       } catch {
-        // no WebGL context. The page keeps the space the CSS reserved and
-        // says nothing — this is decoration, it must never break About.
+        // No context to be had. Nothing is drawn and nothing is said — this
+        // is decoration, it must never break About. The box goes with it: on
+        // desktop it is out of the flow anyway, but on a phone it is not, and
+        // an empty 1:1.5 gap above the footer is worse than no figure at all.
+        host.style.display = "none";
         return;
       }
 

@@ -1018,13 +1018,6 @@ section {
   padding: var(--s-7) 0;
 }
 
-/* the inspiration frame, standing empty until there's an image for it */
-.inspo-empty {
-  min-height: 52vh;
-  display: grid;
-  place-items: center;
-}
-
 @keyframes card-gather {
   from {
     transform: translateX(calc(var(--d) * (clamp(180px, 26vw, 320px) - clamp(36px, 6vw, 90px))));
@@ -1037,42 +1030,294 @@ section {
   }
 }
 
-/* ---------- inspiration: one full-bleed image ---------- */
+/* ---------- inspiration: "let there be light" ----------
 
-main.dark .inspo {
-  background: linear-gradient(100deg, #0c0d10 40%, #16181d 50%, #0c0d10 60%) #0c0d10;
-  background-size: 200% 100%;
-  animation: ph-shimmer 1.6s linear infinite;
+   Two acts on one screen, and the whole sequence is CSS — there is no JS
+   state machine behind it, only the pointer tracker in Spotlight.tsx.
+
+     ACT 1  .ip-verse types itself out a character at a time, a caret walking
+            behind the text, then holds and fades.
+     ACT 2  .ip-wall and .ip-closing fade in under .ip-beam, a near-opaque
+            mask with a soft hole at the cursor. The beam is the only light.
+
+   The clock is one chain of custom properties on .ip-page. --ip-chars is the
+   verse's own length, written inline by the page, so the Italian line simply
+   takes longer to type and everything downstream shifts with it. */
+
+.ip-page {
+  --ip-step: 35ms; /* one character */
+  /* --ip-chars is written inline by the page; the fallback only keeps the
+     chain valid if that ever goes missing, since one invalid calc here would
+     take every animation downstream with it */
+  --ip-type: calc(var(--ip-chars, 50) * var(--ip-step)); /* the whole verse */
+  --ip-hold: 1.2s; /* the caret blinks at the end */
+  --ip-fade: 0.9s;
+  --ip-act2: calc(var(--ip-type) + var(--ip-hold)); /* the light arrives */
 }
 
-.inspo {
-  margin-inline: calc(50% - 50vw); /* to the screen edges */
+/* the stage: the first full screen, edge to edge. Cancelling the shell's top
+   padding (the .hero idiom) puts the scene's centre on the viewport's, which
+   is where the beam starts — so the closing line is lit on arrival, before
+   the pointer has moved. */
+.ip {
+  position: relative;
+  margin-inline: calc(50% - 50vw); /* to the screen edges (the .inspo idiom) */
+  margin-top: calc(-1 * (var(--page-pad) + 56px));
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
 }
 
-.inspo img {
-  width: 100vw;
-  height: auto;
+/* the footer would otherwise sit under a 0.92 mask and vanish */
+.ip-page .site-foot {
+  position: relative;
+  z-index: 401;
+}
+
+/* ---- act 1: the verse writes itself ---- */
+
+.ip-verse {
+  /* same cell as the closing line: the light lands on the exact spot the
+     words left */
+  grid-area: 1 / 1;
+  z-index: 401; /* ABOVE the beam — act 1 is never dimmed */
+  /* ONE row, whole and typing left to right — a verse that wraps reads as two
+     thoughts. What broke this before was a `min(44ch, ...)` measure narrower
+     than the verse, folding it at 44 of its 51 characters with the screen half
+     empty. So the measure is now just 84vw, and the SIZE is solved to fit it:
+     the line's own character count times 0.72em, Futura's average advance plus
+     --track-nav. Each language sizes itself, and the shorter Italian verse
+     comes out larger.
+
+     No `nowrap`: 0.72em is an estimate, and if it ever runs low the line
+     should fall to two rows rather than run off the screen. The 13px floor is
+     the same bargain on a phone, where 51 characters on one row would land
+     around 8px — below that width it wraps, because unreadable is worse than
+     wrapped. */
+  max-width: 84vw;
+  font-size: max(13px, min(17px, calc(84vw / (var(--ip-chars, 50) * 0.72))));
+  font-weight: 300;
+  line-height: 1.9;
+  letter-spacing: var(--track-nav);
+  text-align: center;
+  pointer-events: none; /* once faded, don't intercept the line beneath */
+  animation: ip-out var(--ip-fade) ease var(--ip-act2) forwards;
+}
+
+/* Each character is its own box so the caret can ride in the inline flow —
+   which is the whole reason this survives line wrapping, where a single
+   positioned caret would not. Inline boundaries add no break opportunities,
+   so the line still wraps between words. */
+.ip-ch {
+  position: relative;
+  /* linear, NOT steps(1) — and that is load-bearing. The delay is computed as
+     `--i * 45ms` in floating point, so a character's progress at the end of
+     its 1ms reveal lands on 0.9999999999998899 about as often as on 1. A step
+     function has a cliff there: jump-end emits the FROM keyframe for any
+     progress under 1, so those characters resolved to opacity 0, finished,
+     and the forwards fill pinned them at 0 for good — half the verse never
+     arrived. Linear has no cliff: 0.99999 is 0.99999 opacity, which is a
+     character you can read. A 1ms ramp is still instant to the eye. */
+  animation: ip-type 1ms linear calc(var(--i) * var(--ip-step)) both;
+}
+
+/* The caret is lit only during its own character's slice, and `fill-mode:
+   none` drops it back to 0 the moment that slice is over — so exactly one
+   caret exists at a time and it advances with the text. */
+.ip-ch::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: 0.08em;
+  width: 0.06em;
+  min-width: 1px;
+  height: 1.05em;
+  background: var(--ink);
+  opacity: 0;
+  animation: ip-caret var(--ip-step) linear calc(var(--i) * var(--ip-step));
+}
+
+/* at the end it parks and blinks through the hold. Both animations are
+   listed: the walk still covers the last character's own slice, and the
+   blink takes over the instant the verse is complete. */
+.ip-ch:last-child::after {
+  animation:
+    ip-caret var(--ip-step) linear calc(var(--i) * var(--ip-step)),
+    ip-blink 0.9s linear var(--ip-type) infinite;
+}
+
+@keyframes ip-type {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ip-caret {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ip-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* faded, but still in the accessibility tree — the verse is content, not
+   decoration, and a screen reader should keep it */
+@keyframes ip-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* ---- act 2: the people, and the light ---- */
+
+@keyframes ip-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A crowd, not a gallery: no captions, no gaps, nothing to click. It carries
+   no opacity of its own — the mask alone decides how much of it you see, so
+   inside the beam the photos come up to full strength. With an empty manifest
+   there are simply no children, and a black screen with one faint line is a
+   finished state, not a broken one.
+
+   Two shapes out of the same list: ONE entry is a collage already assembled
+   in an image editor, and covers the screen edge to edge (the reference
+   layout); SEVERAL tile into a mosaic and the browser assembles the collage
+   instead. */
+.ip-wall {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(110px, 14vw, 190px), 1fr));
+  align-content: center;
+  overflow: hidden; /* the mosaic is clipped to the screen, never scrolls */
+  animation: ip-in 1.6s ease calc(var(--ip-act2) + 0.5s) both;
+}
+
+/* one image, full bleed */
+.ip-wall-one {
+  grid-template-columns: 1fr;
+  align-content: stretch;
+}
+
+.ip-tile {
+  position: relative; /* the sized parent next/image `fill` needs */
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.ip-wall-one .ip-tile {
+  aspect-ratio: auto; /* the screen decides the shape, not the crop */
+  height: 100%;
+}
+
+.ip-tile img {
+  object-fit: cover;
+}
+
+/* each authored line gets its own row */
+.ip-line {
   display: block;
-  animation: page-fade 0.45s ease both; /* same fade as the page itself */
 }
 
-/* cursor spotlight (inspiration page): darken everything but a soft circle
-   that tracks the pointer. --x/--y are set live in Spotlight.tsx */
-.spotlight {
+.ip-closing {
+  grid-area: 1 / 1;
+  z-index: 2; /* over the wall, UNDER the beam: the light has to find it */
+  /* the same size as the verse, solved the same way — off --ip-cols, the
+     longest of its authored lines. Small and quiet, so the light comes up on
+     the exact spot the words left rather than on a bigger headline. */
+  max-width: 84vw;
+  font-size: max(13px, min(17px, calc(84vw / (var(--ip-cols, 40) * 0.72))));
+  font-weight: 300;
+  line-height: 1.9;
+  letter-spacing: var(--track-nav);
+  text-align: center;
+  animation: ip-in 1.6s ease calc(var(--ip-act2) + 0.5s) both;
+}
+
+/* ---- the cursor overlays ----
+   Both are the same fixed, click-through layer with --x/--y written live by
+   Spotlight.tsx; only the gradient differs. .spotlight darkens the page
+   around the cursor; .ip-beam inverts that into a flashlight — near-opaque
+   everywhere, clear at the pointer — tinted to the dark page's own #060608
+   rather than pure black. Neither ever fades in on a coarse pointer: the
+   component leaves opacity at 0, so a phone simply sees the whole scene. */
+
+.spotlight,
+.ip-beam {
   position: fixed;
   inset: 0;
-  z-index: 400; /* above the image, below the fixed header (500) */
+  z-index: 400; /* above the scene, below the fixed header (500) */
   pointer-events: none;
   opacity: 0;
-  transition: opacity 1.1s ease; /* darkened spotlight fades in on load */
+  transition: opacity 1.1s ease; /* fades in on load */
   --x: 50vw;
   --y: 50vh;
+}
+
+.spotlight {
   background: radial-gradient(
     circle 260px at var(--x) var(--y),
     rgba(0, 0, 0, 0) 0%,
     rgba(0, 0, 0, 0) 60%,
     rgba(0, 0, 0, 0.55) 100%
   );
+}
+
+/* Wider and softer-cored than .spotlight, because here it is the only light
+   in the room rather than an accent on an already-lit page.
+
+   The outer stop is 0.74, not the near-opaque 0.92 this started at: the
+   collage and the line stay FAINTLY present everywhere — about a quarter
+   visible, enough to sense the crowd — and the beam brings whatever it
+   crosses up to full. A light in a dim room, not a keyhole. */
+.ip-beam {
+  transition-duration: 1.4s;
+  transition-delay: var(--ip-act2); /* stays dark through act 1 */
+  background: radial-gradient(
+    circle 300px at var(--x) var(--y),
+    rgba(6, 6, 8, 0) 0%,
+    rgba(6, 6, 8, 0) 38%,
+    rgba(6, 6, 8, 0.68) 78%,
+    rgba(6, 6, 8, 0.74) 100%
+  );
+}
+
+/* The global reduced-motion rule collapses durations but NOT delays, so
+   these need saying explicitly — and the house position is "gentler, not
+   zero": don't skip to act 2 and throw the verse away. Both acts are simply
+   present at once, the verse above the line, nothing moving. */
+@media (prefers-reduced-motion: reduce) {
+  .ip-ch,
+  .ip-ch::after,
+  .ip-verse,
+  .ip-wall,
+  .ip-closing {
+    animation: none !important;
+  }
+
+  /* out of the shared cell, into two stacked rows so they don't overlap */
+  .ip-verse,
+  .ip-closing {
+    grid-area: auto;
+  }
+
+  .ip-beam {
+    transition-delay: 0s !important;
+  }
 }
 
 @keyframes viewer-in {
