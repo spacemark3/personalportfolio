@@ -2,4 +2,7 @@
 eyebrow: "SOFTWARE ARCHITECT / ARTISTA / JACK OF ALL TRADES"
 ---
 
-Guidato dalla passione per la creatività, Mark unisce il pensiero logico e tecnico all’espressione artistica. Grazie alla sua esperienza sul campo come ex working student, porta in tutto ciò che fa grande disciplina, capacità di adattamento e una silenziosa resilienza. Fuori dal lavoro, lo si può trovare a correre, disegnare o immerso nella visione di anime.
+Mark è un software architect con base a Milano.
+Spinto dalla passione per la creazione, unisce la logica tecnica all’espressione artistica. Ex working student con una solida esperienza pratica in diversi ambiti, porta in tutto ciò che fa disciplina, capacità di adattamento e una resilienza discreta ma profonda.
+Fuori dal lavoro, lo trovi a correre o immerso in qualche progetto artistico.
+ di anime.

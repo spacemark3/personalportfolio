@@ -28,6 +28,21 @@ export const socials = [
   { type: "email", label: "Email", href: "mailto:you@example.com" },
 ] as { type: "instagram" | "x" | "linkedin" | "email"; label: string; href: string }[];
 
+// ---------- contacts ----------
+// The About page's one way to reach him, under the bio. Language-independent:
+// an address and a number read the same in both locales — only the two labels
+// beside them come from the dictionary (about.contact.*).
+//
+// `href` and `text` are kept apart on purpose. A tel: href has to be the bare
+// E.164 number for a phone to dial it, while the number a reader should SEE is
+// grouped and spaced; writing the pretty one into the href is the usual way
+// this breaks.
+export const contacts = {
+  // TODO: your real number. The href is what dials; the text is what shows.
+  phone: { href: "tel:+39 3279562835", text: "+39 3279562835" },
+  email: { href: "mailto:mark3andro@gmail.com", text: "mark3andro@gmail.com" },
+};
+
 // ---------- journey ----------
 // The shapes lib/content.ts builds out of content/<locale>/journey/*.md, and
 // that components/JourneyStack.tsx renders. One .md file per entry: its
@@ -120,5 +135,5 @@ export const person = (file: string, alt?: string): Person => ({
 });
 
 export const people: Person[] = [
-  // person("nonna.webp", "my grandmother"),
+  // person("collage.webp", "the people who supported me"),
 ];

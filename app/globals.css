@@ -20,9 +20,10 @@
   /* the hero name's green, promoted to a token: the site's one accent.
      Ink on it runs ~11:1, so it carries body copy without help. */
   --accent: #8fd9a1;
-  /* the same green in channel form. Tints of the accent (the journey's open
-     book, its index marker, a spine under the cursor) mix from this, so
-     there is one green on the site and not a palette that drifts. */
+  /* the same green in channel form, so a tint of the accent (a journey spine
+     under the cursor) mixes from this rather than drifting into a second
+     green. The journey's open book and its index marker sat on it too until
+     both were taken back to ink. */
   --accent-hsl: 135 49% 71%;
   --font: var(--font-futura), "Futura", "Avenir Next", system-ui, sans-serif;
   /* one tracking scale for the whole site */
@@ -525,6 +526,56 @@ section {
   letter-spacing: 0.025em;
   color: rgba(29, 31, 34, 0.85);
   text-align: left;
+}
+
+/* Contacts, closing the bio. A hairline and the same 480px measure the
+   paragraphs take, so it reads as the description's last line rather than a
+   block bolted under it — and on desktop it lands across the page from the
+   standing figure in the corner, which is the only other thing down there.
+   clear: left for the phone layout, where .about is flow-root and the
+   portrait floats: a short bio would otherwise leave this rule running
+   alongside the photo instead of under it. */
+.about-contacts {
+  clear: left;
+  max-width: 480px;
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  list-style: none;
+}
+
+/* baseline, not centre: the 10px label and the 14px value sit on one line
+   of type rather than on one box */
+.about-contact {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+/* A fixed measure so both values start on the same column — "Telefono" is
+   half again as long as "Phone", and without it the Italian page would set
+   its two links a few pixels apart from the English one's. Wide enough for
+   the longer word at this tracking; flex: none so it never gives ground to
+   an address long enough to wrap. */
+.about-contact-k {
+  flex: none;
+  width: 6.5em;
+  font-size: 10px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* the link language is .bio-link's, shared from the markup; only the size
+   and the wrapping are this element's own. An email address has no spaces
+   to break at, so a narrow phone gets anywhere rather than a scrollbar. */
+.about-contact-v {
+  font-size: 14px;
+  letter-spacing: 0.025em;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 560px) {
@@ -1234,6 +1285,7 @@ section {
 }
 
 .ip-closing {
+  position: relative; /* the scrim below hangs off this */
   grid-area: 1 / 1;
   z-index: 2; /* over the wall, UNDER the beam: the light has to find it */
   /* the same size as the verse, solved the same way — off --ip-cols, the
@@ -1245,7 +1297,32 @@ section {
   line-height: 1.9;
   letter-spacing: var(--track-nav);
   text-align: center;
+  /* the letters keep their own edge where the scrim has faded out */
+  text-shadow: 0 1px 2px rgba(6, 6, 8, 0.85);
   animation: ip-in 1.6s ease calc(var(--ip-act2) + 0.5s) both;
+}
+
+/* Inside the beam the collage sits at FULL brightness, and that is exactly
+   where the line is — thin white over a lit photograph is unreadable, and a
+   text-shadow alone only fought it to a draw. So the line carries its own
+   darkness: a pool of the page's black that fades out well before its edges,
+   so it reads as the collage falling away around the words rather than as a
+   panel laid on top of them.
+   z-index -1 keeps it behind the text but inside .ip-closing's own stacking
+   context, so it is still above the wall. */
+.ip-closing::before {
+  content: "";
+  position: absolute;
+  inset: -5em -7em;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(6, 6, 8, 0.96) 0%,
+    rgba(6, 6, 8, 0.93) 40%,
+    rgba(6, 6, 8, 0.72) 62%,
+    rgba(6, 6, 8, 0) 82%
+  );
 }
 
 /* ---- the cursor overlays ----
@@ -1729,21 +1806,20 @@ section {
   background: rgba(29, 31, 34, 0.05);
 }
 
-/* the place-keeper: the entry the reader is level with takes the accent, so
-   the index says which book is open in the shelf's own colour */
+/* the place-keeper: the entry the reader is level with stays marked, so the
+   index doubles as a position. Ink, not colour — twice the hover's weight, so
+   "where you are" still outranks "what you are pointing at". */
 .jr-index-item[data-here] {
   color: var(--ink);
-  /* 0.45, not the 0.62 the lighter per-book tint needed — the accent is a
-     darker green, and a marker should not outweigh the book it points at */
-  background: hsl(var(--accent-hsl) / 0.45);
+  background: rgba(29, 31, 34, 0.1);
 }
 
 .jr-index-item[data-here]:hover {
-  background: hsl(var(--accent-hsl) / 0.45);
+  background: rgba(29, 31, 34, 0.1);
 }
 
 /* the point on the rail. Shut: nothing. Marked: a filled bead sitting on the
-   hairline, a deeper cut of the accent so it holds against paper at 6px. */
+   hairline — full ink, because at 6px anything softer disappears. */
 .jr-index-dot {
   position: absolute;
   left: -3.5px;
@@ -1751,7 +1827,7 @@ section {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: hsl(135 44% 52%);
+  background: var(--ink);
   transform: scale(0);
   transition: transform 0.4s var(--ease-out-strong);
 }
@@ -1840,13 +1916,12 @@ section {
   margin-top: -1px;
 }
 
-/* the pulled book is the one moment of colour on the page: the same green
-   the hero name is set in, so the shelf blooms rather than lights up */
+/* the pulled book sits back from the shelf rather than colouring it: a shade
+   of the page's own ink, with its hairline pulled up to match, so the open one
+   reads as recessed instead of lit */
 .book[data-open] {
-  /* one green for every book, whichever is pulled: the shelf is a shelf,
-     not a paint chart, and ink on the accent runs ~11:1 */
-  background: var(--accent);
-  border-color: var(--accent);
+  background: rgba(29, 31, 34, 0.06);
+  border-color: rgba(29, 31, 34, 0.22);
   position: relative;
   z-index: 1;
 }
@@ -1938,7 +2013,7 @@ section {
   flex: none;
 }
 
-/* on the green, soft ink needs to sit darker to hold its contrast */
+/* the open book's ground is darker than paper, so soft ink sits darker too */
 .book[data-open] .spine-place,
 .book[data-open] .spine-when {
   color: rgba(29, 31, 34, 0.72);
@@ -1984,7 +2059,7 @@ section {
   font-size: 11.5px;
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
-  /* 0.72, not 0.66 — 0.66 sat just under 4.5:1 on the accent green */
+  /* 0.72 to match .spine-place/.spine-when on the same open-book ground */
   color: rgba(29, 31, 34, 0.72);
 }
 

@@ -1,29 +1,31 @@
-# The people who supported me
+# The inspiration page's background
 
-The background of `/[locale]/inspiration/`, behind the closing line, lit by the
-flashlight cursor. Drop image files here, then add one
-`person("file.webp", "who they are")` line each to `people` in
-`content/content.ts` — the list is explicit, not globbed, the same way the
-sketchbook's is.
+This folder holds what SHIPS. You don't hand-place anything here — put the raw
+photos in `inspiration-src/` and run
 
-The file name is only a key. Nothing on the page ever shows it, and no caption
-is drawn: this is a crowd, not a gallery.
+    npm run collage
 
-## Two shapes
+which packs them into `collage.webp` here and prints the line for
+`content/content.ts`. See `inspiration-src/README.md` for the details.
 
-**One entry** is a collage you assembled yourself in an image editor. It covers
-the screen edge to edge (`object-fit: cover`), which is the layout the page was
-drawn against. Want ~2000px wide, and it can afford ~300KB.
+## Doing it by hand instead
 
-**Several entries** tile into a square mosaic and the browser assembles the
-collage for you. Tiles cap at about 190px on screen, so ~600px on the long edge
-and ~40KB each — that keeps a 24-photo wall near 1MB. They are square-cropped
-by CSS, so faces want to be near the middle of the frame.
+The page doesn't care where the image came from. `people` in
+`content/content.ts` takes two shapes:
+
+- **one entry** — a collage, however it was made, covering the screen edge to
+  edge with `object-fit: cover`. This is what the script produces.
+- **several entries** — the browser tiles them into a square mosaic instead.
+  Simpler, but it reads as a contact sheet, and it costs roughly 4x the bytes
+  because every tile ships at 2x its own size.
+
+If you assemble a collage yourself, aim for ~2000px wide and keep it under
+~400KB as WebP. It sits behind a 74%-opaque mask, so quality far below what
+you'd accept for a hero image is undetectable here.
 
 ## Budget
 
-Either way, this folder is the inspiration page's entire first-paint weight,
-the way `public/work/sketchbook/` is the home page's. Nothing here is optimized
-at build time: GitHub Pages has no image optimizer and `next.config.mjs` sets
-`images: { unoptimized: true }`, so the file you commit is the file that ships.
-WebP, and check the size before committing.
+Whatever is in this folder is the inspiration page's entire first-paint weight,
+the way `public/work/sketchbook/` is the home page's. Nothing is optimized at
+build time — GitHub Pages has no image optimizer and `next.config.mjs` sets
+`images: { unoptimized: true }` — so the file you commit is the file that ships.

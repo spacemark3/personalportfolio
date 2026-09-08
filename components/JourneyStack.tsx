@@ -5,7 +5,7 @@ import type { JourneyChapter, JourneyEntry } from "@/content/content";
 
 // The journey as a shelf of books seen spine-out. Each entry stands vertical,
 // its title set in the spine; clicking one opens it sideways into a reading
-// panel and tints it the site's accent green. One book at a time — the shelf is only
+// panel and sets it back from the shelf. One book at a time — the shelf is only
 // so wide, and a second open book would push the first off the end of it.
 //
 // Beside the shelf stands the index: the book's table of contents, held in

@@ -17,7 +17,10 @@
   },
   "about": {
     "avatarLabel": "A 3D illustration of Mark Andro",
-    "photoAlt": "A portrait photo of Mark Andro"
+    "photoAlt": "A portrait photo of Mark Andro",
+    "contactLabel": "Contacts",
+    "contactPhone": "Phone",
+    "contactEmail": "Email"
   },
   "journey": {
     "contents": "My journey",
@@ -29,7 +32,7 @@
     "next": "next page"
   },
   "inspiration": {
-    "verse": "God said, \"Let there be light,\" and there was light",
+    "verse": "God said, \"Let there be light\", and there was light",
     "closing": ["and the universe said I love you,", "because you are love"],
     "wallLabel": "the people who supported me"
   },

@@ -5,6 +5,7 @@ import { asset } from "@/lib/asset";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import Avatar from "@/components/Avatar";
+import { contacts } from "@/content/content";
 import { getAbout } from "@/lib/content";
 import {
   getDictionary,
@@ -68,6 +69,27 @@ export default async function AboutPage({ params }: PageParams) {
           {about.bio.map((html, i) => (
             <p key={i} className="bio" dangerouslySetInnerHTML={{ __html: html }} />
           ))}
+
+          {/* Under the description, and left of the standing figure in the
+              corner. In the bio's own column rather than pinned to the page's
+              bottom-left: the figure is out of the flow and the footer is not,
+              so a mirrored corner would sit on top of the © line at short
+              window heights. Here it stays the bio's last line at every size,
+              and on a phone it simply follows the text down. */}
+          <ul className="about-contacts" aria-label={t.about.contactLabel}>
+            <li className="about-contact">
+              <span className="about-contact-k">{t.about.contactPhone}</span>
+              <a className="about-contact-v bio-link" href={contacts.phone.href}>
+                {contacts.phone.text}
+              </a>
+            </li>
+            <li className="about-contact">
+              <span className="about-contact-k">{t.about.contactEmail}</span>
+              <a className="about-contact-v bio-link" href={contacts.email.href}>
+                {contacts.email.text}
+              </a>
+            </li>
+          </ul>
         </div>
       </section>
 
