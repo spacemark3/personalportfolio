@@ -1426,7 +1426,8 @@ section {
   animation: ip-in 1.6s ease calc(var(--ip-act2) + 0.5s) both;
 }
 
-/* one image, full bleed */
+/* one image, given the whole stage — though it is fitted inside it rather
+   than bleeding off it, see the object-fit rule below */
 .ip-wall-one {
   grid-template-columns: 1fr;
   align-content: stretch;
@@ -1443,8 +1444,25 @@ section {
   height: 100%;
 }
 
+/* Mosaic tiles are square boxes holding photos that are not, so they crop —
+   that is what `cover` is for and it stays. */
 .ip-tile img {
   object-fit: cover;
+}
+
+/* The single collage is the opposite case and gets the opposite rule, on
+   every screen. `cover` fills the viewport by discarding whatever does not
+   fit, which on a 16:9 collage costs the left and right edges on a phone and
+   the top and bottom on a wide desktop window — and the thing being discarded
+   is people. So it is FITTED instead: the whole picture, as large as it will
+   go, with the page's ground showing wherever the shapes disagree.
+
+   The trade is that the collage no longer covers the screen, and on the one
+   page whose subject is who is in the picture, every face present beats a
+   large crop of a few of them. Scoped to .ip-wall-one so a future mosaic
+   keeps its own behaviour above. */
+.ip-wall-one .ip-tile img {
+  object-fit: contain;
 }
 
 /* each authored line gets its own row */
@@ -1465,44 +1483,44 @@ section {
   line-height: 1.9;
   letter-spacing: var(--track-nav);
   text-align: center;
-  /* the letters keep their own edge where the scrim has faded out */
-  text-shadow: 0 1px 2px rgba(6, 6, 8, 0.85);
+  /* The whole of the line's legibility, now that the dark pool behind it is
+     gone. A tight black core kills the halo a bright photo puts around thin
+     white strokes; the two wider, softer passes sit the words on a faint
+     darkening that has no edge to it, so it reads as the photograph dimming
+     rather than as a panel. */
+  text-shadow:
+    0 1px 2px rgba(6, 6, 8, 0.95),
+    0 0 10px rgba(6, 6, 8, 0.85),
+    0 0 26px rgba(6, 6, 8, 0.7);
   animation: ip-in 1.6s ease calc(var(--ip-act2) + 0.5s) both;
 }
 
-/* Inside the beam the collage sits at FULL brightness, and that is exactly
-   where the line is — thin white over a lit photograph is unreadable, and a
-   text-shadow alone only fought it to a draw. So the line carries its own
-   darkness: a pool of the page's black that fades out well before its edges,
-   so it reads as the collage falling away around the words rather than as a
-   panel laid on top of them.
-   z-index -1 keeps it behind the text but inside .ip-closing's own stacking
-   context, so it is still above the wall. */
-.ip-closing::before {
-  content: "";
-  position: absolute;
-  inset: -5em -7em;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(6, 6, 8, 0.96) 0%,
-    rgba(6, 6, 8, 0.93) 40%,
-    rgba(6, 6, 8, 0.72) 62%,
-    rgba(6, 6, 8, 0) 82%
-  );
-}
+/* There WAS a pool of the page's black behind this line, because inside the
+   beam the collage sits at full brightness and thin white over a lit
+   photograph is hard to read. It is gone deliberately: however softly it
+   faded, it still read as a dark panel parked in the middle of the wall, and
+   the wall is the point.
 
-/* ---- the cursor overlays ----
-   Both are the same fixed, click-through layer with --x/--y written live by
-   Spotlight.tsx; only the gradient differs. .spotlight darkens the page
-   around the cursor; .ip-beam inverts that into a flashlight — near-opaque
-   everywhere, clear at the pointer — tinted to the dark page's own #060608
-   rather than pure black. Both run on touch as well as mouse — a phone gets
-   the light at the centre of the screen and moves it by tapping or dragging,
-   with the beam offset above the fingertip so the hand is not covering the
-   one thing it is lighting. That offset is applied to --y in Spotlight.tsx,
-   because it depends on what touched the glass and not on the media. */
+   What holds the line together now is the shadow on .ip-closing above — three
+   stacked shadows rather than the single one that used to only assist the
+   pool. That carries the letters over a lit photo without putting a shape of
+   its own on the screen. If a future collage is bright enough to swallow the
+   line anyway, deepen those shadows rather than bringing the panel back. */
+
+/* ---- the pointer overlays ----
+   Both are the same fixed, click-through layer; only the gradient differs.
+   .spotlight darkens the page around the cursor; .ip-beam inverts that into a
+   flashlight — near-opaque everywhere, clear at the pointer — tinted to the
+   dark page's own #060608 rather than pure black.
+
+   --x/--y are written live by Spotlight.tsx, from a mouse and from a finger
+   alike — the light only ever goes where the reader put it. A version of this
+   drifted around on its own on touch; it is gone, and deliberately: a light
+   nobody is steering is decoration, and this one is supposed to be the
+   reader's. The one concession touch needs is that the beam sits slightly
+   ABOVE the contact point, because a fingertip covers the very spot it is
+   lighting. That offset lives in the component, since it depends on what
+   touched the glass rather than on the media. */
 
 .spotlight,
 .ip-beam {
@@ -1531,17 +1549,12 @@ section {
    The outer stop is 0.74, not the near-opaque 0.92 this started at: the
    collage and the line stay FAINTLY present everywhere — about a quarter
    visible, enough to sense the crowd — and the beam brings whatever it
-   crosses up to full. A light in a dim room, not a keyhole.
-
-   The radius is capped against the viewport because a flat 300px is a
-   spotlight on a laptop and nearly the whole screen on a phone — the same
-   number stops reading as a beam once it is 77% of the width. 55vw takes
-   over below ~546px and leaves every larger screen exactly as it was. */
+   crosses up to full. A light in a dim room, not a keyhole. */
 .ip-beam {
   transition-duration: 1.4s;
   transition-delay: var(--ip-act2); /* stays dark through act 1 */
   background: radial-gradient(
-    circle min(300px, 55vw) at var(--x) var(--y),
+    circle 300px at var(--x) var(--y),
     rgba(6, 6, 8, 0) 0%,
     rgba(6, 6, 8, 0) 38%,
     rgba(6, 6, 8, 0.68) 78%,

@@ -91,7 +91,20 @@ export default async function InspirationPage({ params }: PageParams) {
                   src={p.src}
                   alt={p.alt ?? ""}
                   fill
-                  sizes="(max-width: 640px) 33vw, 16vw"
+                  /* A lone entry is one collage covering the screen edge to
+                     edge, so it occupies the full viewport width; several are
+                     mosaic tiles capped around 190px. Declaring 16vw for a
+                     full-bleed background is how you end up serving a
+                     quarter-width file for it. Inert while next.config sets
+                     images.unoptimized (no srcset is generated at all), but
+                     wrong the moment that is turned on. */
+                  sizes={people.length === 1 ? "100vw" : "(max-width: 640px) 33vw, 16vw"}
+                  /* The collage IS the page's background and it has to be
+                     there when act 2 raises it, or the wall fades in empty.
+                     Eager, but deliberately not `priority`: that would add a
+                     preload and put it ahead of the fonts act 1 needs first,
+                     to win a race it has four seconds to lose. */
+                  loading={people.length === 1 ? "eager" : "lazy"}
                 />
               </div>
             ))}

@@ -6,12 +6,11 @@ import { useEffect, useRef } from "react";
 // follows the pointer. Pure overlay — pointer-events off, so it never blocks
 // interaction beneath.
 //
-// Touch is a first-class input here, not a fallback. `pointermove` fires on a
-// dragging finger and `pointerdown` on a tap, so the same two listeners drive
-// both; the light simply starts at the centre of the screen and goes wherever
-// it is touched. It stays where the finger left it, which is the only sensible
-// resting state — a light that switched off on release would make the page
-// unreadable the moment you stopped moving.
+// The light only ever goes where the reader put it. Mouse and finger drive it
+// the same way: `pointermove` fires on a dragging finger and `pointerdown` on
+// a tap, so the same two listeners cover both, and it stays where the finger
+// left it. That resting behaviour is the only sensible one — a light that went
+// out on release would make the page unreadable the moment you stopped moving.
 //
 // What lives here is only the pointer plumbing — the rAF throttle, the finger
 // lift, and the --x/--y custom properties. How much it darkens, and how wide
@@ -20,7 +19,7 @@ import { useEffect, useRef } from "react";
 // that is the only light on the page.
 
 // A fingertip covers roughly the spot it is lighting, so a touch beam rides
-// this far above the contact point. Enough to clear the finger, small enough
+// this far above the contact point — enough to clear the hand, close enough
 // that the light still reads as coming from it.
 const TOUCH_LIFT = 52;
 
@@ -31,24 +30,22 @@ export default function Spotlight({ className = "spotlight" }: { className?: str
     const el = ref.current;
     if (!el) return;
 
-    // fade the beam in on load — starts at the viewport centre, which is
-    // where the scene is, then follows the pointer
+    // fade the beam in on load — starts at the viewport centre, which is where
+    // the scene is, then follows the pointer
     el.style.setProperty("--x", `${window.innerWidth / 2}px`);
     el.style.setProperty("--y", `${window.innerHeight / 2}px`);
     const fadeIn = requestAnimationFrame(() => (el.style.opacity = "1"));
 
     let raf = 0;
     const move = (e: PointerEvent) => {
-      // Read the event now: it is pooled by nothing, but the rAF below runs
-      // after the handler returns and `e` stays valid, so only the values are
-      // captured to keep the closure honest.
+      // read the event now; the rAF below runs after the handler returns
       const { clientX, clientY, pointerType } = e;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         // Per-EVENT, not a media query. `(pointer: coarse)` reports the
-        // PRIMARY pointer, so a touchscreen laptop answers "fine" and its
-        // taps would land under the finger; pointerType knows what actually
-        // touched the glass this time.
+        // PRIMARY pointer, so a touchscreen laptop answers "fine" and its taps
+        // would land under the finger; pointerType knows what actually touched
+        // the glass this time.
         const lift = pointerType === "touch" ? TOUCH_LIFT : 0;
         el.style.setProperty("--x", `${clientX}px`);
         el.style.setProperty("--y", `${clientY - lift}px`);

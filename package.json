@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "sketchbook": "node scripts/sketchbook.mjs",
-    "collage": "node scripts/collage.mjs"
+    "inspiration-bg": "node scripts/inspiration-bg.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

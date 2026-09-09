@@ -126,5 +126,5 @@ export const person = (file: string, alt?: string): Person => ({
 });
 
 export const people: Person[] = [
-  // person("collage.webp", "the people who supported me"),
+  person("collage.webp", "the people who supported me"),
 ];
