@@ -29,18 +29,22 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   };
 }
 
-// The page is in two acts, and the whole sequence is CSS — timing, the act
-// change, all of it — so this stays a server component. The one piece of
-// client code is the beam.
+// The page is in two acts with a hard cut between them, and the whole
+// sequence is CSS — timing, the act change, all of it — so this stays a
+// server component. The one piece of client code is the beam.
 //
 //   ACT 1  on black, the verse writes itself out a letter at a time, with a
-//          caret walking behind the text. It holds a beat, then fades.
+//          caret walking behind the text. It holds a beat.
+//   CUT    the screen it is written on switches off, the way a CRT does:
+//          a flash, a fold to a line and then to a point, a spark, and a
+//          phosphor glow decaying to black. "Let there be light" — and then
+//          there isn't.
 //   ACT 2  the wall of photographs fades in with the closing line over it,
 //          under a near-opaque mask. The cursor is the only light there is.
 //
 // The order below is paint order, not reading order: the wall and the line
-// are act 2 and sit underneath, the verse is act 1 and sits on top of the
-// beam so nothing ever dims it.
+// are act 2 and sit underneath, the verse is act 1 and rides inside the tube
+// on top of the beam, so nothing ever dims it before it is taken away.
 export default async function InspirationPage({ params }: PageParams) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
@@ -104,20 +108,45 @@ export default async function InspirationPage({ params }: PageParams) {
           ))}
         </p>
 
-        {/* Split by code point, not UTF-16 unit, so accented letters stay
-            whole. Inline boxes add no break opportunities, so a line of
-            one-character spans still wraps between words. */}
-        <p className="ip-verse">
-          {[...verse].map((ch, i) => (
-            <span
-              className="ip-ch"
-              key={i}
-              style={{ "--i": i } as React.CSSProperties}
-            >
-              {ch}
-            </span>
-          ))}
-        </p>
+        {/* The tube. The verse sits INSIDE .ip-crt-screen because that is the
+            part that collapses — a screen that folds while the words hang in
+            place is a wipe, not a power-off. The flash, the line, the spark
+            and the glow are its siblings for the opposite reason: nested,
+            they would be scaled to nothing along with everything else.
+
+            All of it is decoration except the verse, which stays real text in
+            the accessibility tree. Timing and beat sheet: .ip-crt in
+            globals.css; the tuning harness is crt/crt-off.html. */}
+        <div className="ip-crt">
+          <div className="ip-crt-screen">
+            <div className="ip-crt-bulge">
+              {/* Split by code point, not UTF-16 unit, so accented letters
+                  stay whole. Inline boxes add no break opportunities, so a
+                  line of one-character spans still wraps between words. */}
+              <p className="ip-verse">
+                {[...verse].map((ch, i) => (
+                  <span
+                    className="ip-ch"
+                    key={i}
+                    style={{ "--i": i } as React.CSSProperties}
+                  >
+                    {ch}
+                  </span>
+                ))}
+              </p>
+              <div className="ip-crt-scan" aria-hidden />
+            </div>
+          </div>
+
+          {/* paint order matters: the glow sits under the spark, and the
+              flash over both — it is the only thing lit at t=0 */}
+          <div className="ip-crt-line" aria-hidden />
+          <div className="ip-crt-glow" aria-hidden />
+          <svg className="ip-crt-spark" viewBox="0 0 24 24" aria-hidden>
+            <path d="M12 0 C12.6 8.4 15.6 11.4 24 12 C15.6 12.6 12.6 15.6 12 24 C11.4 15.6 8.4 12.6 0 12 C8.4 11.4 11.4 8.4 12 0 Z" />
+          </svg>
+          <div className="ip-crt-flash" aria-hidden />
+        </div>
       </section>
 
       <SiteFooter locale={locale} />

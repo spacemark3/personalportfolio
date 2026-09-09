@@ -292,19 +292,6 @@ section {
   mask-image: linear-gradient(to bottom, #000 42%, transparent);
 }
 
-.top nav .top-socials {
-  display: flex;
-  align-items: center;
-  gap: var(--s-4);
-  margin-left: 12px;
-  padding-left: 12px;
-}
-
-.top .icon-mask {
-  width: 17px;
-  height: 17px;
-}
-
 .top .name {
   font-size: 15px;
   font-weight: 300; /* display light */
@@ -396,29 +383,6 @@ section {
 
   .top nav > a[aria-current] {
     background: rgba(29, 31, 34, 0.06);
-  }
-
-  .top nav .top-socials {
-    gap: var(--s-5);
-    margin: var(--s-1) 0 0;
-    padding: var(--s-3) 14px var(--s-2);
-    border-top: 1px solid var(--hairline);
-  }
-
-  .top .icon-btn {
-    position: relative;
-    padding: 6px;
-    margin: 0; /* the desktop -8px hit-area trick collapses targets here */
-  }
-  /* invisible hit-area extension → 44px-class targets without moving pixels */
-  .top .icon-btn::after {
-    content: "";
-    position: absolute;
-    inset: -8px -6px;
-  }
-  .top .icon-mask {
-    width: 16px;
-    height: 16px;
   }
 }
 
@@ -617,36 +581,6 @@ section {
 
 .bio-link:hover {
   text-decoration-color: var(--ink);
-}
-
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* 17px glyph + padding = 41px visual-adjacent hit area; header gap keeps
-     neighbors clear (SC 2.5.8 satisfied via spacing) */
-  padding: var(--s-3);
-  margin: calc(-1 * var(--s-2));
-  color: var(--ink-soft);
-  transition: color 0.2s;
-}
-
-.icon-btn:hover {
-  color: var(--ink);
-}
-
-/* PNG icons rendered in currentColor via mask (public/icons/*.png) */
-.icon-mask {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  background: currentColor;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
 }
 
 /* ---------- hero: the sketchbook over the name ----------
@@ -1083,17 +1017,22 @@ section {
 
 /* ---------- inspiration: "let there be light" ----------
 
-   Two acts on one screen, and the whole sequence is CSS — there is no JS
-   state machine behind it, only the pointer tracker in Spotlight.tsx.
+   Two acts on one screen with a hard cut between them, and the whole
+   sequence is CSS — there is no JS state machine behind it, only the pointer
+   tracker in Spotlight.tsx.
 
      ACT 1  .ip-verse types itself out a character at a time, a caret walking
-            behind the text, then holds and fades.
+            behind the text, then holds.
+     CUT    .ip-crt powers the tube off: a flash, the raster folds to a line
+            and then to a point, a spark, and phosphor decay to black. The
+            verse does not fade — it is carried off by the collapse.
      ACT 2  .ip-wall and .ip-closing fade in under .ip-beam, a near-opaque
             mask with a soft hole at the cursor. The beam is the only light.
 
    The clock is one chain of custom properties on .ip-page. --ip-chars is the
    verse's own length, written inline by the page, so the Italian line simply
-   takes longer to type and everything downstream shifts with it. */
+   takes longer to type and everything downstream shifts with it — the cut
+   and both acts included, since they all hang off --ip-off and --ip-act2. */
 
 .ip-page {
   --ip-step: 35ms; /* one character */
@@ -1102,8 +1041,9 @@ section {
      take every animation downstream with it */
   --ip-type: calc(var(--ip-chars, 50) * var(--ip-step)); /* the whole verse */
   --ip-hold: 1.2s; /* the caret blinks at the end */
-  --ip-fade: 0.9s;
-  --ip-act2: calc(var(--ip-type) + var(--ip-hold)); /* the light arrives */
+  --ip-off: calc(var(--ip-type) + var(--ip-hold)); /* the tube dies */
+  --ip-crt: 1s; /* the whole power-off, beat sheet at .ip-crt below */
+  --ip-act2: calc(var(--ip-off) + var(--ip-crt)); /* the light arrives */
 }
 
 /* the stage: the first full screen, edge to edge. Cancelling the shell's top
@@ -1151,8 +1091,10 @@ section {
   line-height: 1.9;
   letter-spacing: var(--track-nav);
   text-align: center;
-  pointer-events: none; /* once faded, don't intercept the line beneath */
-  animation: ip-out var(--ip-fade) ease var(--ip-act2) forwards;
+  pointer-events: none; /* once gone, don't intercept the line beneath */
+  /* No fade of its own any more: the verse rides INSIDE .ip-crt-screen and
+     is carried off by the collapse. An opacity fade running alongside would
+     wash the squash out — the raster has to still be lit when it folds. */
 }
 
 /* Each character is its own box so the caret can ride in the inline flow —
@@ -1221,11 +1163,237 @@ section {
   }
 }
 
-/* faded, but still in the accessibility tree — the verse is content, not
-   decoration, and a screen reader should keep it */
-@keyframes ip-out {
-  to {
+/* ---- the act break: the tube dies ----
+
+   Authored in crt/crt-off.html, which has the replay button and the 0.25x
+   speed control this copy can't justify. Beat sheet, all offsets from
+   --ip-off:
+
+     flash    0ms   80ms   the gun dumps its remaining charge
+     squash  60ms  260ms   vertical deflection dies, the raster folds to a line
+     pinch  320ms   90ms   horizontal follows, the line folds to a point
+     spark  400ms  130ms   the point blooms
+     glow   460ms  480ms   phosphor decay into the page's ground
+
+   Ends at 940ms, which is what --ip-crt: 1s is rounded from. Act 2 is not
+   retimed by hand — it hangs off --ip-act2, which now includes this. */
+
+/* The stage. Never transforms: only .ip-crt-screen collapses, and the flash,
+   line, spark and glow are its SIBLINGS, because anything nested inside the
+   plate is scaled to nothing along with it.
+
+   z-index sits above the beam (400) and below the fixed header (500). The
+   nav deliberately survives the power-off — it is the page's only way out,
+   and a reader stranded on a black screen with no nav is a bug, not an
+   effect. */
+.ip-crt {
+  position: absolute;
+  inset: 0;
+  z-index: 402;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.ip-crt-screen {
+  grid-area: 1 / 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  transform-origin: center center;
+  will-change: transform;
+  /* the raster's own light: transparent while the picture is up, driven to
+     full by the squash, so the folded line reads as the averaged image */
+  background-color: rgba(214, 254, 255, 0);
+  animation: ip-crt-collapse 0.35s linear calc(var(--ip-off) + 60ms) both;
+}
+
+/* The bulge is faked — a rounded plate and an inset vignette. A true barrel
+   warp wants feDisplacementMap, which is expensive and renders inconsistently
+   across browsers to buy about two pixels of curvature at this size. */
+.ip-crt-bulge {
+  grid-area: 1 / 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: 50% / 12%;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 140px 40px rgba(0, 0, 0, 0.55),
+    inset 0 0 40px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Faint on purpose — scanlines you can consciously count are too strong.
+   They compress into a solid bar as the plate squashes, which is the effect
+   doing itself for free. */
+.ip-crt-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0 1px,
+    rgba(255, 255, 255, 0) 1px 3px
+  );
+}
+
+/* The hot line the raster folds into — its own element so the bloom is not
+   flattened by the plate's own scaleY. */
+.ip-crt-line {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 2px;
+  background: #fff;
+  opacity: 0;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  box-shadow:
+    0 0 8px 2px rgba(214, 254, 255, 0.9),
+    0 0 28px 6px rgba(140, 240, 255, 0.55),
+    0 0 60px 18px rgba(90, 200, 255, 0.28);
+  animation: ip-crt-line 0.35s linear calc(var(--ip-off) + 60ms) both;
+}
+
+/* One flash, ~85%, ~80ms. WCAG 2.3.1 draws the line at three flashes per
+   second, so a single one is compliant — do not repeat it. */
+.ip-crt-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: ip-crt-flash 0.08s ease-out var(--ip-off) both;
+}
+
+/* Inline SVG rather than the ✢ glyph: U+2722 is absent from Futura and from
+   most system fallbacks, so the text route renders tofu on most machines. */
+.ip-crt-spark {
+  grid-area: 1 / 1;
+  width: clamp(56px, 9vw, 104px);
+  height: clamp(56px, 9vw, 104px);
+  opacity: 0;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  filter:
+    drop-shadow(0 0 6px rgba(255, 255, 255, 0.95))
+    drop-shadow(0 0 18px rgba(150, 245, 255, 0.8))
+    drop-shadow(0 0 44px rgba(80, 200, 255, 0.5));
+  animation: ip-crt-spark 0.13s cubic-bezier(0.2, 0.9, 0.3, 1)
+    calc(var(--ip-off) + 400ms) both;
+}
+
+.ip-crt-spark path {
+  fill: #fff;
+}
+
+/* The phosphor pool the point leaves behind. It dissolves into #060608, the
+   page's own ground — the same choice .ip-beam documents below. Pure black
+   would leave a visible square hanging in the middle of the screen. */
+.ip-crt-glow {
+  grid-area: 1 / 1;
+  width: clamp(220px, 34vw, 460px);
+  aspect-ratio: 1;
+  opacity: 0;
+  will-change: transform, opacity;
+  background: radial-gradient(
+    circle at center,
+    rgba(226, 255, 255, 0.95) 0%,
+    rgba(150, 240, 255, 0.55) 18%,
+    rgba(80, 190, 255, 0.22) 38%,
+    rgba(6, 6, 8, 0) 70%
+  );
+  animation: ip-crt-glow 0.48s cubic-bezier(0.3, 0, 0.6, 1)
+    calc(var(--ip-off) + 460ms) both;
+}
+
+@keyframes ip-crt-flash {
+  0% {
     opacity: 0;
+  }
+  22% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Both folds are ONE animation with per-keyframe easing, because two
+   animations cannot share `transform`. 74.3% is 260 of the 350ms span — the
+   moment the line is formed — so the stops here and the beat sheet above
+   have to be kept in agreement by hand.
+
+   The squash curve holds a beat then falls off a cliff, which is what a
+   discharging deflection coil does; linear reads as a window blind. */
+@keyframes ip-crt-collapse {
+  0% {
+    transform: scaleY(1) scaleX(1);
+    background-color: rgba(214, 254, 255, 0);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.9, 0.2);
+  }
+  74.3% {
+    transform: scaleY(0.0035) scaleX(1);
+    background-color: rgba(214, 254, 255, 1);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.75, 0.1);
+  }
+  100% {
+    transform: scaleY(0.0035) scaleX(0);
+    background-color: rgba(214, 254, 255, 1);
+  }
+}
+
+@keyframes ip-crt-line {
+  0% {
+    opacity: 0;
+    transform: scaleX(1) scaleY(0.4);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.9, 0.2);
+  }
+  62% {
+    opacity: 0.35;
+    transform: scaleX(1) scaleY(0.7);
+  }
+  74.3% {
+    opacity: 1;
+    transform: scaleX(1) scaleY(1);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.75, 0.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(0) scaleY(1);
+  }
+}
+
+/* "expands slightly" — 1.18, a bloom rather than a starburst */
+@keyframes ip-crt-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1) rotate(8deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18) rotate(14deg);
+  }
+}
+
+@keyframes ip-crt-glow {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.35);
+  }
+  30% {
+    opacity: 0.5;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
   }
 }
 
@@ -1330,8 +1498,11 @@ section {
    Spotlight.tsx; only the gradient differs. .spotlight darkens the page
    around the cursor; .ip-beam inverts that into a flashlight — near-opaque
    everywhere, clear at the pointer — tinted to the dark page's own #060608
-   rather than pure black. Neither ever fades in on a coarse pointer: the
-   component leaves opacity at 0, so a phone simply sees the whole scene. */
+   rather than pure black. Both run on touch as well as mouse — a phone gets
+   the light at the centre of the screen and moves it by tapping or dragging,
+   with the beam offset above the fingertip so the hand is not covering the
+   one thing it is lighting. That offset is applied to --y in Spotlight.tsx,
+   because it depends on what touched the glass and not on the media. */
 
 .spotlight,
 .ip-beam {
@@ -1360,12 +1531,17 @@ section {
    The outer stop is 0.74, not the near-opaque 0.92 this started at: the
    collage and the line stay FAINTLY present everywhere — about a quarter
    visible, enough to sense the crowd — and the beam brings whatever it
-   crosses up to full. A light in a dim room, not a keyhole. */
+   crosses up to full. A light in a dim room, not a keyhole.
+
+   The radius is capped against the viewport because a flat 300px is a
+   spotlight on a laptop and nearly the whole screen on a phone — the same
+   number stops reading as a beam once it is 77% of the width. 55vw takes
+   over below ~546px and leaves every larger screen exactly as it was. */
 .ip-beam {
   transition-duration: 1.4s;
   transition-delay: var(--ip-act2); /* stays dark through act 1 */
   background: radial-gradient(
-    circle 300px at var(--x) var(--y),
+    circle min(300px, 55vw) at var(--x) var(--y),
     rgba(6, 6, 8, 0) 0%,
     rgba(6, 6, 8, 0) 38%,
     rgba(6, 6, 8, 0.68) 78%,
@@ -1384,6 +1560,38 @@ section {
   .ip-wall,
   .ip-closing {
     animation: none !important;
+  }
+
+  /* The house rule here is "gentler, not zero" — but it inverts for the
+     tube. A full-screen white flash and a 90ms collapse are precisely what
+     this query exists to suppress, so the power-off does not happen at all:
+     no flash, no fold, no spark. The verse simply stays. */
+  .ip-crt-flash,
+  .ip-crt-line,
+  .ip-crt-spark,
+  .ip-crt-glow {
+    display: none !important;
+  }
+
+  .ip-crt-screen {
+    animation: none !important;
+    transform: none !important;
+    background-color: transparent !important;
+  }
+
+  .ip-crt-bulge {
+    box-shadow: none !important; /* the vignette is only there to sell a bulge */
+  }
+
+  /* All three wrappers dissolve, not just the outer one: `display: contents`
+     has to reach the whole chain or .ip-crt-screen simply inherits the job of
+     covering the stage and the verse still lands on top of the closing line.
+     With them gone .ip-verse is a direct child of .ip again, which is what
+     the grid-area reset below assumes. */
+  .ip-crt,
+  .ip-crt-screen,
+  .ip-crt-bulge {
+    display: contents;
   }
 
   /* out of the shared cell, into two stacked rows so they don't overlap */
@@ -1604,7 +1812,7 @@ section {
   }
 }
 
-/* ---------- footer (Michelle-style: rule, ©, two link columns) ---------- */
+/* ---------- footer: a hairline rule and the © line ---------- */
 
 .site-foot {
   display: flex;
@@ -1623,45 +1831,10 @@ section {
   color: var(--ink);
 }
 
-.site-foot-cols {
-  display: flex;
-  gap: clamp(40px, 8vw, 96px);
-}
-
-.site-foot-cols div {
-  display: grid;
-  gap: var(--s-4);
-  align-content: start;
-}
-
-.site-foot-cols a {
-  font-size: 12px;
-  letter-spacing: var(--track-caps);
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  transition: color 0.2s;
-  /* comfortable targets without visual bulk */
-  position: relative;
-}
-
-.site-foot-cols a::after {
-  content: "";
-  position: absolute;
-  inset: -8px -4px;
-}
-
-.site-foot-cols a:hover {
-  color: var(--ink);
-}
-
 @media (max-width: 640px) {
   .site-foot {
     flex-direction: column;
     gap: var(--s-6);
-  }
-  .site-foot-cols {
-    width: 100%;
-    justify-content: space-between;
   }
 }
 
@@ -2144,8 +2317,8 @@ section {
 }
 
 @media (max-width: 640px) {
-  /* in the collapsed panel it becomes a footer row under the links, the
-     same shape .top-socials takes there */
+  /* in the collapsed panel it becomes a footer row under the links: full
+     width, left-aligned, separated by a hairline rule */
   .top nav .lang-switch {
     justify-content: flex-start;
     gap: var(--s-1);

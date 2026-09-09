@@ -19,15 +19,6 @@ export const site = {
   name: "Mark Andro",
 };
 
-// TODO: placeholder targets — swap in your own profiles and address.
-// Unused by any page today; kept for when the footer grows its link columns.
-export const socials = [
-  { type: "instagram", label: "Instagram", href: "#" },
-  { type: "x", label: "X", href: "#" },
-  { type: "linkedin", label: "LinkedIn", href: "#" },
-  { type: "email", label: "Email", href: "mailto:you@example.com" },
-] as { type: "instagram" | "x" | "linkedin" | "email"; label: string; href: string }[];
-
 // ---------- contacts ----------
 // The About page's one way to reach him, under the bio. Language-independent:
 // an address and a number read the same in both locales — only the two labels

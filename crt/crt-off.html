@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRT power-off — scaffold</title>
+
+<!--
+  The authoring scaffold for the inspiration page's act break, the same way
+  avatar/portfolio-avatar.html is the scaffold for the shipped avatar. Open
+  this file directly — no build, no dev server.
+
+  What lives here and NOT in the shipped copy: the replay button, the speed
+  control, and the beat readout. The site's version is fire-once CSS with no
+  controls and no JavaScript at all.
+
+  The shipped copy is `.ip-crt*` in app/globals.css, driven by the markup in
+  app/(site)/[locale]/inspiration/page.tsx. Tune the numbers in the --b-*
+  block below, then carry them across unchanged: the two use the same beat
+  names and the same easing curves.
+-->
+
+<style>
+  /* ---------- the beat sheet ----------
+     Every number the effect has. Delays are cumulative from the moment the
+     power-off fires; --speed scales the whole timeline for inspection and is
+     1 in the shipped copy (which has no such knob).
+
+       flash    the electron gun dumps its remaining charge
+       squash   vertical deflection dies, the raster folds to a line
+       pinch    horizontal deflection follows, the line folds to a point
+       spark    the point blooms
+       glow     phosphor decay into the page's ground
+
+     Total is ~940ms, so the shipped --ip-crt is 1s. */
+  :root {
+    --speed: 1;
+
+    --b-flash-at:   0ms;    --b-flash-dur:   80ms;
+    --b-squash-at:  60ms;   --b-squash-dur: 260ms;
+    --b-pinch-at:  320ms;   --b-pinch-dur:   90ms;
+    --b-spark-at:  400ms;   --b-spark-dur:  130ms;
+    --b-glow-at:   460ms;   --b-glow-dur:   480ms;
+
+    /* A discharging deflection coil doesn't fall linearly — it holds a beat,
+       then drops off a cliff. Linear here reads as a window blind closing. */
+    --ease-squash: cubic-bezier(0.7, 0, 0.9, 0.2);
+    --ease-pinch: cubic-bezier(0.6, 0, 0.75, 0.1);
+
+    --ground: #060608; /* the site's own near-black, not #000 */
+    --phosphor: #d6feff; /* the cyan-white a P4 phosphor actually decays to */
+  }
+
+  /* Scaled copies — everything below reads these, never the raw --b-* values.
+     They hang off .stage rather than .crt because .after needs them too, and
+     it is a sibling of the tube, not a child. */
+  .stage {
+    --flash-at: calc(var(--b-flash-at) * var(--speed));
+    --flash-dur: calc(var(--b-flash-dur) * var(--speed));
+    --squash-at: calc(var(--b-squash-at) * var(--speed));
+    --squash-dur: calc(var(--b-squash-dur) * var(--speed));
+    --pinch-at: calc(var(--b-pinch-at) * var(--speed));
+    --pinch-dur: calc(var(--b-pinch-dur) * var(--speed));
+    --spark-at: calc(var(--b-spark-at) * var(--speed));
+    --spark-dur: calc(var(--b-spark-dur) * var(--speed));
+    --glow-at: calc(var(--b-glow-at) * var(--speed));
+    --glow-dur: calc(var(--b-glow-dur) * var(--speed));
+  }
+
+  /* ---------- the page under test ---------- */
+
+  /* The site loads Futura as a local face. On file:// most browsers refuse
+     to fetch it, so the stack below is what you will usually see — close
+     enough in metrics that the type-size solve transfers. */
+  @font-face {
+    font-family: "Futura Local";
+    src: url("../app/fonts/futura-light.ttf") format("truetype");
+    font-weight: 300;
+    font-display: swap;
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+
+  body {
+    min-height: 100vh;
+    background: var(--ground);
+    color: #f2f4f7;
+    font-family: "Futura Local", Futura, "Century Gothic", "Avenir Next", sans-serif;
+    font-weight: 300;
+    overflow: hidden;
+  }
+
+  /* the stage: one full screen, the verse dead centre — the same cell the
+     closing line occupies on the real page */
+  .stage {
+    position: relative;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+  }
+
+  /* what act 2 rises into once the tube is dark. Present from the start at
+     zero opacity so you can see the power-off hand off to it. */
+  .after {
+    grid-area: 1 / 1;
+    max-width: 84vw;
+    text-align: center;
+    line-height: 1.9;
+    letter-spacing: 0.12em;
+    font-size: max(13px, min(17px, calc(84vw / (40 * 0.72))));
+    opacity: 0;
+  }
+  .run .after {
+    /* --glow-at and --glow-dur are already scaled; only the raw 500ms gap
+       still needs multiplying, or slow-mo compounds the delay */
+    animation: after-in calc(1600ms * var(--speed)) ease
+      calc(var(--glow-at) + var(--glow-dur) + (500ms * var(--speed))) both;
+  }
+  @keyframes after-in { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ---------- the tube ----------
+     .crt is the stage and never transforms. Only .crt-screen collapses —
+     the flash, the line, the spark and the glow are siblings, because
+     anything inside the plate gets scaled to nothing along with it. */
+  .crt {
+    position: absolute;
+    inset: 0;
+    z-index: 402; /* on the site: above the beam (400), below the header (500) */
+    pointer-events: none;
+    display: grid;
+    place-items: center;
+  }
+
+  .crt-screen {
+    grid-area: 1 / 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    /* the raster's own light. Transparent while the picture is up; the
+       squash drives it to full, so the folded line IS the averaged image. */
+    background: rgba(214, 254, 255, 0);
+  }
+
+  /* The bulge is faked: a rounded plate plus an inset vignette. A true
+     barrel warp wants feDisplacementMap, which is expensive and renders
+     inconsistently across browsers to buy about two pixels of curvature at
+     this size. Not a good trade. */
+  .crt-bulge {
+    grid-area: 1 / 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    border-radius: 50% / 12%;
+    overflow: hidden;
+    box-shadow:
+      inset 0 0 140px 40px rgba(0, 0, 0, 0.55),
+      inset 0 0 40px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Faint on purpose — scanlines you can consciously see are too strong.
+     They compress into a solid bar as the plate squashes, which is the
+     effect doing itself for free. */
+  .crt-scan {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.035) 0 1px,
+      rgba(255, 255, 255, 0) 1px 3px
+    );
+  }
+
+  .crt-verse {
+    position: relative;
+    max-width: 84vw;
+    text-align: center;
+    line-height: 1.9;
+    letter-spacing: 0.12em;
+    /* the site's solve: the line's own character count against 84vw */
+    font-size: max(13px, min(17px, calc(84vw / (51 * 0.72))));
+  }
+
+  /* the hot line the raster folds into. Its own element so the bloom is not
+     squashed by the plate's own scaleY. */
+  .crt-line {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 2px;
+    background: #fff;
+    opacity: 0;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    box-shadow:
+      0 0 8px 2px rgba(214, 254, 255, 0.9),
+      0 0 28px 6px rgba(140, 240, 255, 0.55),
+      0 0 60px 18px rgba(90, 200, 255, 0.28);
+  }
+
+  .crt-flash {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+  }
+
+  /* Inline SVG, not the ✢ glyph — U+2722 is absent from Futura and from most
+     system fallbacks, so the text route renders a tofu box on the majority
+     of machines. The quadratic sides give the concave sparkle shape. */
+  .crt-spark {
+    grid-area: 1 / 1;
+    width: clamp(56px, 9vw, 104px);
+    height: clamp(56px, 9vw, 104px);
+    opacity: 0;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    filter:
+      drop-shadow(0 0 6px rgba(255, 255, 255, 0.95))
+      drop-shadow(0 0 18px rgba(150, 245, 255, 0.8))
+      drop-shadow(0 0 44px rgba(80, 200, 255, 0.5));
+  }
+  .crt-spark path { fill: #fff; }
+
+  /* the phosphor pool the point leaves behind, dissolving into the page's
+     own ground rather than pure black — #000 would leave a visible square */
+  .crt-glow {
+    grid-area: 1 / 1;
+    width: clamp(220px, 34vw, 460px);
+    aspect-ratio: 1;
+    opacity: 0;
+    will-change: opacity, transform;
+    background: radial-gradient(
+      circle at center,
+      rgba(226, 255, 255, 0.95) 0%,
+      rgba(150, 240, 255, 0.55) 18%,
+      rgba(80, 190, 255, 0.22) 38%,
+      rgba(6, 6, 8, 0) 70%
+    );
+  }
+
+  /* ---------- the sequence ----------
+     Nothing runs until .run is on the stage; the scaffold toggles it to
+     replay. On the site there is no gate — the animations simply fire. */
+
+  .run .crt-flash {
+    animation: crt-flash var(--flash-dur) ease-out var(--flash-at) both;
+  }
+  @keyframes crt-flash {
+    0%   { opacity: 0; }
+    22%  { opacity: 0.85; } /* one flash, ~85% — see the a11y note below */
+    100% { opacity: 0; }
+  }
+
+  /* Both folds live in ONE animation with per-keyframe easing, because two
+     animations cannot share `transform`. Percentages are against the total
+     span (squash-at → pinch end), so the keyframe stops and the beat sheet
+     above have to be kept in agreement by hand. */
+  .run .crt-screen {
+    animation: crt-collapse calc(var(--squash-dur) + var(--pinch-dur))
+      linear var(--squash-at) both;
+  }
+  @keyframes crt-collapse {
+    0% {
+      transform: scaleY(1) scaleX(1);
+      background-color: rgba(214, 254, 255, 0);
+      animation-timing-function: var(--ease-squash);
+    }
+    /* 260 of 350ms — the raster has folded to a line and is at full heat */
+    74.3% {
+      transform: scaleY(0.0035) scaleX(1);
+      background-color: rgba(214, 254, 255, 1);
+      animation-timing-function: var(--ease-pinch);
+    }
+    100% {
+      transform: scaleY(0.0035) scaleX(0);
+      background-color: rgba(214, 254, 255, 1);
+    }
+  }
+
+  .run .crt-line {
+    animation: crt-line calc(var(--squash-dur) + var(--pinch-dur))
+      linear var(--squash-at) both;
+  }
+  @keyframes crt-line {
+    0%    { opacity: 0; transform: scaleX(1) scaleY(0.4); animation-timing-function: var(--ease-squash); }
+    62%   { opacity: 0.35; transform: scaleX(1) scaleY(0.7); }
+    74.3% { opacity: 1; transform: scaleX(1) scaleY(1); animation-timing-function: var(--ease-pinch); }
+    100%  { opacity: 1; transform: scaleX(0) scaleY(1); }
+  }
+
+  .run .crt-spark {
+    animation: crt-spark var(--spark-dur) cubic-bezier(0.2, 0.9, 0.3, 1)
+      var(--spark-at) both;
+  }
+  @keyframes crt-spark {
+    0%   { opacity: 0; transform: scale(0.4) rotate(0deg); }
+    35%  { opacity: 1; transform: scale(1) rotate(8deg); }
+    /* "expands slightly" — 1.18, not a starburst */
+    100% { opacity: 0; transform: scale(1.18) rotate(14deg); }
+  }
+
+  .run .crt-glow {
+    animation: crt-glow var(--glow-dur) cubic-bezier(0.3, 0, 0.6, 1)
+      var(--glow-at) both;
+  }
+  @keyframes crt-glow {
+    0%   { opacity: 0.9; transform: scale(0.35); }
+    30%  { opacity: 0.5; transform: scale(0.6); }
+    100% { opacity: 0; transform: scale(1); }
+  }
+
+  /* ---------- reduced motion ----------
+     The house rule on this site is "gentler, not zero", but it inverts here:
+     a full-screen white flash and a 90ms collapse are precisely what this
+     query exists to suppress. So the tube simply never fires and the verse
+     stays put. */
+  @media (prefers-reduced-motion: reduce) {
+    .crt-flash, .crt-spark, .crt-glow, .crt-line { display: none !important; }
+    .run .crt-screen { animation: none !important; transform: none !important; }
+    .run .after { animation: none !important; opacity: 1 !important; }
+    .crt { position: static; }
+  }
+
+  /* ---------- scaffold chrome (none of this ships) ---------- */
+  .rig {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border: 1px solid rgba(242, 244, 247, 0.18);
+    border-radius: 999px;
+    background: rgba(12, 12, 16, 0.82);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    font: 400 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.06em;
+  }
+  .rig button {
+    font: inherit;
+    color: #f2f4f7;
+    background: rgba(242, 244, 247, 0.08);
+    border: 1px solid rgba(242, 244, 247, 0.22);
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .rig button:hover { background: rgba(242, 244, 247, 0.16); }
+  .rig button[aria-pressed="true"] {
+    background: #f2f4f7;
+    color: #0b0b0e;
+    border-color: #f2f4f7;
+  }
+  .rig .beat { min-width: 8.5em; color: rgba(242, 244, 247, 0.72); }
+  .rig .beat b { color: #9df; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <p class="after">and the universe said I love you,<br>because you are love</p>
+
+  <div class="crt">
+    <div class="crt-screen">
+      <div class="crt-bulge">
+        <p class="crt-verse">God said, &ldquo;Let there be light&rdquo;, and there was light</p>
+        <div class="crt-scan"></div>
+      </div>
+    </div>
+
+    <div class="crt-line"></div>
+
+    <div class="crt-glow"></div>
+
+    <svg class="crt-spark" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 0 C12.6 8.4 15.6 11.4 24 12 C15.6 12.6 12.6 15.6 12 24 C11.4 15.6 8.4 12.6 0 12 C8.4 11.4 11.4 8.4 12 0 Z"/>
+    </svg>
+
+    <div class="crt-flash"></div>
+  </div>
+</div>
+
+<div class="rig">
+  <button id="replay" type="button">replay</button>
+  <button id="slow" type="button" aria-pressed="false">0.25&times;</button>
+  <span class="beat">t <b id="clock">0</b> ms</span>
+</div>
+
+<script>
+  // Scaffold only. The shipped copy has no JavaScript — the animations fire
+  // on load and that is the whole state machine.
+  const stage = document.getElementById("stage");
+  const clock = document.getElementById("clock");
+  const slow = document.getElementById("slow");
+  let speed = 1;
+  let t0 = 0;
+  let raf = 0;
+
+  function play() {
+    cancelAnimationFrame(raf);
+    stage.classList.remove("run");
+    void stage.offsetWidth; // reflow, or the class toggle coalesces to a no-op
+    stage.classList.add("run");
+    t0 = performance.now();
+    tick();
+  }
+
+  function tick() {
+    const t = Math.round((performance.now() - t0) / speed);
+    clock.textContent = Math.min(t, 1600);
+    if (t < 1600) raf = requestAnimationFrame(tick);
+  }
+
+  document.getElementById("replay").addEventListener("click", play);
+
+  slow.addEventListener("click", () => {
+    speed = speed === 1 ? 4 : 1;
+    slow.setAttribute("aria-pressed", String(speed !== 1));
+    document.documentElement.style.setProperty("--speed", speed);
+    play();
+  });
+
+  play();
+</script>
+
+</body>
+</html>

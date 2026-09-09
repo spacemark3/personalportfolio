@@ -10,3 +10,4 @@ sketchbook-src/*
 !sketchbook-src/README.md
 inspiration-src/*
 !inspiration-src/README.md
+.claude/skills/
