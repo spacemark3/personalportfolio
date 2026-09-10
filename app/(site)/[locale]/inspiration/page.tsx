@@ -39,35 +39,31 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 //          a flash, a fold to a line and then to a point, a spark, and a
 //          phosphor glow decaying to black. "Let there be light" — and then
 //          there isn't.
-//   ACT 2  the wall of photographs fades in with the closing line over it,
-//          under a near-opaque mask. The cursor is the only light there is.
+//   ACT 2  the wall of photographs fades in under a near-opaque mask. The
+//          closing line is part of the collage itself — it is baked into the
+//          image, the same words in both languages — so the page has none of
+//          its own. The cursor is the only light there is.
 //
-// The order below is paint order, not reading order: the wall and the line
-// are act 2 and sit underneath, the verse is act 1 and rides inside the tube
-// on top of the beam, so nothing ever dims it before it is taken away.
+// The order below is paint order, not reading order: the wall is act 2 and
+// sits underneath, the verse is act 1 and rides inside the tube on top of the
+// beam, so nothing ever dims it before it is taken away.
 export default async function InspirationPage({ params }: PageParams) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = getDictionary(locale);
-  const { verse, closing, wallLabel } = t.inspiration;
+  const { verse, wallLabel } = t.inspiration;
 
   return (
-    // Two character counts, both measured here because only this side knows
-    // the strings. --ip-chars is the verse's own length and drives BOTH the
-    // typing clock and the type size that keeps it on one row; --ip-cols is
-    // the longest closing line, which does the same for act 2. Each locale
-    // therefore sizes itself, and the shorter Italian lines simply come out
-    // larger. They ride on <main> rather than the section because the beam is
-    // the section's SIBLING and has to inherit the timing derived from this.
+    // --ip-chars is the verse's own length, measured here because only this
+    // side knows the string, and it drives BOTH the typing clock and the type
+    // size that keeps the verse on one row. Each locale therefore sizes
+    // itself, and the shorter Italian line simply comes out larger. It rides
+    // on <main> rather than the section because the beam is the section's
+    // SIBLING and has to inherit the timing derived from this.
     <main
       id="main"
       className="page dark ip-page"
-      style={
-        {
-          "--ip-chars": [...verse].length,
-          "--ip-cols": Math.max(...closing.map((l) => [...l].length)),
-        } as React.CSSProperties
-      }
+      style={{ "--ip-chars": [...verse].length } as React.CSSProperties}
     >
       <SiteNav locale={locale} active="inspiration" />
 
@@ -110,16 +106,6 @@ export default async function InspirationPage({ params }: PageParams) {
             ))}
           </div>
         )}
-
-        {/* One line per entry in the dictionary — the break is authored, not
-            left to the measure, so each language breaks where it reads best. */}
-        <p className="ip-closing">
-          {closing.map((line) => (
-            <span className="ip-line" key={line}>
-              {line}
-            </span>
-          ))}
-        </p>
 
         {/* The tube. The verse sits INSIDE .ip-crt-screen because that is the
             part that collapses — a screen that folds while the words hang in

@@ -1026,8 +1026,9 @@ section {
      CUT    .ip-crt powers the tube off: a flash, the raster folds to a line
             and then to a point, a spark, and phosphor decay to black. The
             verse does not fade — it is carried off by the collapse.
-     ACT 2  .ip-wall and .ip-closing fade in under .ip-beam, a near-opaque
-            mask with a soft hole at the cursor. The beam is the only light.
+     ACT 2  .ip-wall fades in under .ip-beam, a near-opaque mask with a soft
+            hole at the cursor. The beam is the only light, and the closing
+            line is part of the collage rather than text over it.
 
    The clock is one chain of custom properties on .ip-page. --ip-chars is the
    verse's own length, written inline by the page, so the Italian line simply
@@ -1048,8 +1049,8 @@ section {
 
 /* the stage: the first full screen, edge to edge. Cancelling the shell's top
    padding (the .hero idiom) puts the scene's centre on the viewport's, which
-   is where the beam starts — so the closing line is lit on arrival, before
-   the pointer has moved. */
+   is where the beam starts — so the middle of the wall, and the line written
+   into it, is lit on arrival, before the pointer has moved. */
 .ip {
   position: relative;
   margin-inline: calc(50% - 50vw); /* to the screen edges (the .inspo idiom) */
@@ -1068,8 +1069,8 @@ section {
 /* ---- act 1: the verse writes itself ---- */
 
 .ip-verse {
-  /* same cell as the closing line: the light lands on the exact spot the
-     words left */
+  /* the centre cell, the one the wall comes up in: the light lands on the
+     exact spot the words left */
   grid-area: 1 / 1;
   z-index: 401; /* ABOVE the beam — act 1 is never dimmed */
   /* ONE row, whole and typing left to right — a verse that wraps reads as two
@@ -1465,47 +1466,14 @@ section {
   object-fit: contain;
 }
 
-/* each authored line gets its own row */
-.ip-line {
-  display: block;
-}
-
-.ip-closing {
-  position: relative; /* the scrim below hangs off this */
-  grid-area: 1 / 1;
-  z-index: 2; /* over the wall, UNDER the beam: the light has to find it */
-  /* the same size as the verse, solved the same way — off --ip-cols, the
-     longest of its authored lines. Small and quiet, so the light comes up on
-     the exact spot the words left rather than on a bigger headline. */
-  max-width: 84vw;
-  font-size: max(13px, min(17px, calc(84vw / (var(--ip-cols, 40) * 0.72))));
-  font-weight: 300;
-  line-height: 1.9;
-  letter-spacing: var(--track-nav);
-  text-align: center;
-  /* The whole of the line's legibility, now that the dark pool behind it is
-     gone. A tight black core kills the halo a bright photo puts around thin
-     white strokes; the two wider, softer passes sit the words on a faint
-     darkening that has no edge to it, so it reads as the photograph dimming
-     rather than as a panel. */
-  text-shadow:
-    0 1px 2px rgba(6, 6, 8, 0.95),
-    0 0 10px rgba(6, 6, 8, 0.85),
-    0 0 26px rgba(6, 6, 8, 0.7);
-  animation: ip-in 1.6s ease calc(var(--ip-act2) + 0.5s) both;
-}
-
-/* There WAS a pool of the page's black behind this line, because inside the
-   beam the collage sits at full brightness and thin white over a lit
-   photograph is hard to read. It is gone deliberately: however softly it
-   faded, it still read as a dark panel parked in the middle of the wall, and
-   the wall is the point.
-
-   What holds the line together now is the shadow on .ip-closing above — three
-   stacked shadows rather than the single one that used to only assist the
-   pool. That carries the letters over a lit photo without putting a shape of
-   its own on the screen. If a future collage is bright enough to swallow the
-   line anyway, deepen those shadows rather than bringing the panel back. */
+/* The closing line — "and the universe said i love you, because you are
+   love" — used to be live text stacked over the wall, with its own type scale
+   and three shadows carrying it across a lit photograph. It is now part of
+   the collage, set into the image itself and the same words in both
+   languages, so the page draws nothing over the wall at all. If it ever comes
+   back as text, it wants that shadow stack rather than a dark panel behind
+   it: a panel reads as furniture parked on the wall, and the wall is the
+   point. */
 
 /* ---- the pointer overlays ----
    Both are the same fixed, click-through layer; only the gradient differs.
@@ -1565,13 +1533,12 @@ section {
 /* The global reduced-motion rule collapses durations but NOT delays, so
    these need saying explicitly — and the house position is "gentler, not
    zero": don't skip to act 2 and throw the verse away. Both acts are simply
-   present at once, the verse above the line, nothing moving. */
+   present at once, the verse over the wall, nothing moving. */
 @media (prefers-reduced-motion: reduce) {
   .ip-ch,
   .ip-ch::after,
   .ip-verse,
-  .ip-wall,
-  .ip-closing {
+  .ip-wall {
     animation: none !important;
   }
 
@@ -1598,18 +1565,17 @@ section {
 
   /* All three wrappers dissolve, not just the outer one: `display: contents`
      has to reach the whole chain or .ip-crt-screen simply inherits the job of
-     covering the stage and the verse still lands on top of the closing line.
-     With them gone .ip-verse is a direct child of .ip again, which is what
-     the grid-area reset below assumes. */
+     covering the stage and blacking the wall out behind the verse. With them
+     gone .ip-verse is a direct child of .ip again, which is what the
+     grid-area reset below assumes. */
   .ip-crt,
   .ip-crt-screen,
   .ip-crt-bulge {
     display: contents;
   }
 
-  /* out of the shared cell, into two stacked rows so they don't overlap */
-  .ip-verse,
-  .ip-closing {
+  /* back into normal flow, so the grid's own centring places it */
+  .ip-verse {
     grid-area: auto;
   }
 

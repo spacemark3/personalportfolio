@@ -99,15 +99,16 @@ export const sketchbook: SketchPage[] = [
 ];
 
 // ---------- inspiration: the people who supported him ----------
-// A wall of photographs behind the closing line, revealed only by the
-// flashlight cursor. `alt` is optional: the wall carries one aria-label of
+// A wall of photographs carrying the closing line inside it, revealed only by
+// the flashlight cursor. `alt` is optional: the wall carries one aria-label of
 // its own (inspiration.wallLabel), so an unnamed photo is decorative rather
 // than unlabelled. No width/height — the tiles are sized by the grid and the
 // images are `fill`.
 //
-// Drop files into public/inspiration/ and add a line each. The page is
-// finished with none of them: the wall is simply empty and the beam still
-// finds the line.
+// Drop files into public/inspiration/ and add a line each. The page still
+// runs with none of them — act 1 plays and the beam sweeps an empty wall —
+// but act 2 then has nothing to show, the closing line included, since that
+// line is written into the collage rather than onto the page.
 //
 // The list takes two shapes. ONE entry is a collage already assembled in an
 // image editor, and covers the screen edge to edge — that is the layout the

@@ -46,7 +46,9 @@ screen. That is deliberate. But the beam is tuned to sweep that band
 (`ip-beam-drift-y` in `app/globals.css`), so if you export a much squarer
 collage, widen its range to match.
 
-**Don't put the closing line in the image.** *"and the universe said i love you
-because you are love"* is live text on the page — translated, in the
-accessibility tree, and animated. Baked into the collage you would get it
-twice.
+**The closing line lives in the image.** *"and the universe said i love you
+because you are love"* used to be live text on the page; it is now set into
+the collage itself, the same words in both languages, and the page draws
+nothing over the wall. So compose room for it, keep it inside the band a phone
+actually sees, and remember it is a picture of words: it is not in the
+accessibility tree and it does not translate.
