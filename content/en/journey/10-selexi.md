@@ -6,6 +6,5 @@ place: "Selexi"
 span: "present"
 ---
 
-Developed key features to streamline production workflows and accelerate
-testing. Engineered, tested, and documented system functionalities to ensure
-high reliability while enhancing WCAG compliance and platform accessibility.
+Developed key features to streamline production workflows and accelerate the creation of the online testing. 
+Engineered, tested, and documented system functionalities to ensure reliability while enhancing WCAG compliance and platform accessibility.

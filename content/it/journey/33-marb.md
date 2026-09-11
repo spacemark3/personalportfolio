@@ -6,6 +6,6 @@ place: "MARB Srl"
 span: "2020 - 2021"
 ---
 
-Ho prelevato e imballato gli ordini per la spedizione, garantendo precisione
-ed efficienza nel processo di evasione. Ho sviluppato solide capacità
-organizzative e di gestione del tempo in un ambiente dai ritmi serrati.
+Ho lavorato in un magazzino alimentare durante il periodo di COVID, un periodo di grande richiesta per tutti i supermercati, mi sono occupato
+di preparare i bancali con i prodotti richiesti utilizzando il muletto, con orari molto flessibili e la distanza del posto di lavoro
+ho imparato a dare valore al tempo sviluppando grande capacità organizzative.

@@ -6,7 +6,6 @@ place: "Nespresso"
 span: "2022 - 2023"
 ---
 
-Provided customer support and assistance for clients calling in, ensuring
-their needs were met and issues resolved promptly. Developed strong
-communication and problem-solving skills while maintaining a high level of
-customer satisfaction.
+Provided customer support and assistance to clients through inbound and outbound calls, handling order status inquiries, promoting new products, and troubleshooting issues with damaged machines.
+
+Developed strong communication and problem-solving skills while working in an English-speaking environment.

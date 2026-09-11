@@ -84,17 +84,17 @@ const mounted = (file: string, title: string, flags?: SketchFlags): SketchPage =
 export const sketchbook: SketchPage[] = [
   mounted("i want to live", "\"I want to live!\""),
   mounted("助けて", "\"助けて\""),
-  mounted("eustass", "Laguna"),
-  mounted("i am proud of you", "\n I will make you proud \n"),
-  mounted("sasuke", " This is the last time "),
+  mounted("eustass", "Damned Punk!"),
+  mounted("i am proud of you", "You reap what you sow!"),
+  mounted("sasuke", "This is the last time"),
   mounted("konan", "Konan - Itachi"),
   mounted("kisame", "Kisame - Sasori"),
-  mounted("notes", "\" I will never forget you\""),
+  mounted("notes", "\"I will never forget you\""),
   mounted("kimono", "Diwata"),
   mounted("megumi", "Megumi"),
   mounted("fly", "To Pimp A Caterpillar"),
-  mounted("prisoner of the mind", "Prisoner Of The Mind"),
-  mounted("bakugo", "Bakugo - Deku"),
+  mounted("prisoner of the mind", "Prisoner of The Mind"),
+  mounted("bakugo", "Last fight"),
   mounted("thinking of the blue sky", "青い空が好きです", { home: true }),
 ];
 

@@ -1,5 +1,5 @@
 ---
-lede: "Custodisco i momenti e le persone che incontro: allargano la mia anima, e questo è il mio percorso."
+lede: "Non si tratta di avere la capacità di fare qualcosa. Si tratta di avere la volontà, il desiderio e l’impegno necessari per dare il meglio di sé"
 # L'ordine dei capitoli è l'ordine di questa lista. Il lavoro viene prima
 # degli studi: la pagina è letta da chi assume per un ruolo software, e la
 # prima cosa che cerca è il lavoro. `lead: place` mette l'azienda nel corpo

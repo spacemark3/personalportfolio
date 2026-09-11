@@ -1,5 +1,5 @@
 ---
-lede: "I treasure moments and people I encounter, they expand my soul and this is my journey."
+lede: "It’s not about having the skill to do something. It’s about having the will, desire and commitment to be your best."
 # Chapter order is the order of this list. Work comes before the studies: the
 # page is read by people hiring for a software role, and the first thing they
 # look for is the work. `lead: place` sets the company in the large type
