@@ -15,11 +15,51 @@
     "switchTo": "Leggi in italiano"
   },
   "about": {
-    "avatarLabel": "A 3D illustration of Mark Andro",
     "photoAlt": "A portrait photo of Mark Andro",
     "contactLabel": "Contacts",
     "contactPhone": "Phone",
-    "contactEmail": "Email"
+    "contactEmail": "Email",
+    "island": {
+      "label": "An island of the places this story happens in — pick one to look closer",
+      "hint": "click an element",
+      "back": "back to the island",
+      "turn": "drag to turn",
+      "me": "me",
+      "places": {
+        "bahay-kubo": {
+          "title": "the bahay kubo",
+          "body": "Where it starts. Stilts, bamboo and a nipa roof — the house that taught me a good structure is mostly what you leave out."
+        },
+        "shore": {
+          "title": "the shore",
+          "body": "A banca pulled up on the sand, a palm leaning over it. Home, and the habit of making do with whatever floats."
+        },
+        "sari-sari": {
+          "title": "the sari-sari store",
+          "body": "A counter, a striped awning, a strip of sachets. The first lesson in shipping small and shipping often."
+        },
+        "duomo": {
+          "title": "Milan",
+          "body": "Marble spires on the other side of the island. The city I work from now, a long way from the first one."
+        },
+        "tram": {
+          "title": "the tram",
+          "body": "Orange, unhurried, older than anyone riding it, and still on time. An argument for maintaining good things rather than replacing them."
+        },
+        "studio": {
+          "title": "the studio",
+          "body": "A desk, a CRT still glowing, a scaffold tower beside it. Where the architecture gets drawn — and redrawn."
+        },
+        "easel": {
+          "title": "the easel",
+          "body": "Canvas, brushes, a sketchbook open on the ground. The other half of the work, and the half that keeps the first one honest."
+        },
+        "graves": {
+          "title": "the graves",
+          "body": "Two crosses on the quiet side of the island, each hung with the hat its owner wore. Proof a story can end and still keep teaching you something, years later."
+        }
+      }
+    }
   },
   "journey": {
     "contents": "My journey",

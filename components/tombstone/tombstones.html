@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Memorial Graves — Ace &amp; Whitebeard</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+    "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js",
+    "three/addons/exporters/OBJExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js",
+    "three/addons/exporters/GLTFExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js"
+  },
+  "integrity": {
+    "https://unpkg.com/three@0.184.0/build/three.module.js": "sha384-8FCZ1eVO6it4+pbec2aDtnTrwjWXZLJRC+MAGCIPDgsYnUrl/E0A2YlF8ioMKI/J",
+    "https://unpkg.com/three@0.184.0/build/three.core.js": "sha384-dw2ooPewaEIrAgl6oFDBmmBWCE9oW9LxRGcfwZ0hLvEprzo202wXl7vCYHRlSnOT",
+    "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js": "sha384-4rziNxOBZKQ69i+w+f89KJ55TCYquwchVbByQwmaOeIOXdOU2PLDn3kOfXHwIJC9",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js": "sha384-nbwtoZENJD3Vq+ACK0CuGQdPMuDWHkamC2KJD70EV5nfg6jQjfppKOea07YJN+N3",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js": "sha384-VofkvpG6HERhFCYbsUOHeNXBCqID2nfqkQqnVzE1jc/oPcz+qJ13ADdXH08hE+cQ"
+  }
+}
+</script>
+<style>
+  html, body { margin:0; height:100%; background:#f3f2f2; }
+  three-d-stage:not(:defined) { visibility:hidden; }
+  three-d-stage { display:block; width:100vw; height:100vh; }
+</style>
+</head>
+<body>
+<three-d-stage name="memorial-graves" background="#f3f2f2" autorotate></three-d-stage>
+<script src="./three-d-stage.js"></script>
+<script type="module">
+const stage = document.querySelector('three-d-stage');
+const { THREE } = await stage.ready;
+
+const M = {
+  stone:     new THREE.MeshStandardMaterial({ name:'stone',      color:0xb9b4ad, roughness:0.92, metalness:0.02 }),
+  darkStone: new THREE.MeshStandardMaterial({ name:'dark-stone', color:0x6f6a64, roughness:0.95, metalness:0.02 }),
+  earth:     new THREE.MeshStandardMaterial({ name:'earth',      color:0x5d5147, roughness:1.0,  metalness:0.0 }),
+  hatOrange: new THREE.MeshStandardMaterial({ name:'hat-orange', color:0xec6b13, roughness:0.75, metalness:0.0 }),
+  hatDark:   new THREE.MeshStandardMaterial({ name:'hat-dark',   color:0x2a2724, roughness:0.7,  metalness:0.0 }),
+  cream:     new THREE.MeshStandardMaterial({ name:'cream',      color:0xe8e2d6, roughness:0.7,  metalness:0.0 }),
+  accent:    new THREE.MeshStandardMaterial({ name:'accent-red', color:0xec3013, roughness:0.6,  metalness:0.0 }),
+  wood:      new THREE.MeshStandardMaterial({ name:'wood',       color:0x6b4a31, roughness:0.85, metalness:0.05 }),
+  metal:     new THREE.MeshStandardMaterial({ name:'steel',      color:0xc8ccd0, roughness:0.35, metalness:0.35 }),
+};
+
+const model = new THREE.Group();
+model.name = 'memorial-graves';
+const add = (parent, mesh, name) => { mesh.name = name; parent.add(mesh); return mesh; };
+
+/* ---------- ground: earthen mound on a stone plinth ---------- */
+const ground = new THREE.Group(); ground.name = 'ground';
+const plinth = add(ground, new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.22, 2.2), M.darkStone), 'plinth');
+plinth.position.y = 0.11;
+const mound = add(ground, new THREE.Mesh(new THREE.SphereGeometry(1.55, 48, 24, 0, Math.PI*2, 0, Math.PI/2), M.earth), 'mound');
+mound.scale.set(1.02, 0.09, 0.6);
+mound.position.y = 0.221;
+// scattered stones around the mound
+const stoneGeo = new THREE.DodecahedronGeometry(0.09, 0);
+[[-1.45,0.62],[1.5,-0.55],[-1.05,-0.75],[1.2,0.7],[0.1,-0.85],[-0.3,0.85]].forEach(([x,z], i) => {
+  const s = add(ground, new THREE.Mesh(stoneGeo, M.stone), 'pebble-' + (i+1));
+  s.position.set(x, 0.25, z);
+  s.scale.setScalar(0.7 + (i % 3) * 0.22);
+  s.rotation.set(i, i * 1.7, i * 0.6);
+});
+model.add(ground);
+
+/* ---------- grave cross ---------- */
+function cross({ h, w, t, barY, barW, name }) {
+  const g = new THREE.Group(); g.name = name;
+  const footing = add(g, new THREE.Mesh(new THREE.BoxGeometry(w*2.3, 0.2, t*2.6), M.darkStone), name + '-footing');
+  footing.position.y = 0.1;
+  const shaft = add(g, new THREE.Mesh(new THREE.BoxGeometry(w, h, t), M.stone), name + '-shaft');
+  shaft.position.y = 0.2 + h/2;
+  const bar = add(g, new THREE.Mesh(new THREE.BoxGeometry(barW, barH(w), t + 0.004), M.stone), name + '-crossbar');
+  bar.position.y = 0.2 + barY;
+  // chamfered cap on the shaft top
+  const cap = add(g, new THREE.Mesh(new THREE.BoxGeometry(w*1.12, 0.06, t*1.14), M.darkStone), name + '-cap');
+  cap.position.y = 0.2 + h - 0.01;
+  return g;
+}
+const barH = (w) => w;
+
+const aceCross = cross({ h: 1.75, w: 0.2, t: 0.17, barY: 1.28, barW: 0.92, name: 'cross-ace' });
+aceCross.position.set(-0.72, 0.2, 0.05);
+aceCross.rotation.y = 0.06;
+model.add(aceCross);
+
+const wbCross = cross({ h: 2.35, w: 0.28, t: 0.23, barY: 1.74, barW: 1.32, name: 'cross-whitebeard' });
+wbCross.position.set(0.82, 0.2, -0.04);
+wbCross.rotation.y = -0.05;
+model.add(wbCross);
+
+/* ---------- Ace's wide-brim hat, hung on the crossbar ---------- */
+function cowboyHat() {
+  const g = new THREE.Group(); g.name = 'hat-ace';
+  const brimPts = [];
+  for (let i = 0; i <= 18; i++) {
+    const u = i / 18;
+    const r = 0.2 + u * 0.28;
+    const y = 0.01 - Math.sin(u * Math.PI) * 0.035 + Math.pow(u, 2.3) * 0.13;   // dipped then upturned rim
+    brimPts.push(new THREE.Vector2(r, y));
+  }
+  const brim = add(g, new THREE.Mesh(new THREE.LatheGeometry(brimPts, 48), M.hatOrange), 'hat-ace-brim');
+  const crown = add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.205, 0.26, 48, 1, true), M.hatOrange), 'hat-ace-crown');
+  crown.position.y = 0.14;
+  const top = add(g, new THREE.Mesh(new THREE.SphereGeometry(0.17, 48, 16, 0, Math.PI*2, 0, Math.PI/2), M.hatOrange), 'hat-ace-crown-top');
+  top.scale.y = 0.5; top.position.y = 0.265;
+  const band = add(g, new THREE.Mesh(new THREE.TorusGeometry(0.198, 0.026, 16, 48), M.accent), 'hat-ace-band');
+  band.rotation.x = Math.PI/2; band.position.y = 0.05;
+  const beadGeo = new THREE.SphereGeometry(0.028, 20, 14);
+  for (let i = 0; i < 4; i++) {
+    const b = add(g, new THREE.Mesh(beadGeo, M.cream), 'hat-ace-bead-' + (i+1));
+    const a = -0.5 + i * 0.33;
+    b.position.set(Math.sin(a) * 0.212, 0.058, Math.cos(a) * 0.212);
+  }
+  return g;
+}
+const aceHat = cowboyHat();
+aceHat.position.set(-0.7, 1.9, 0.02);
+aceHat.rotation.set(-0.3, 0.35, 0.16);
+model.add(aceHat);
+
+/* ---------- Whitebeard's captain hat, hung on the big crossbar ---------- */
+function captainHat() {
+  const g = new THREE.Group(); g.name = 'hat-whitebeard';
+  const pts = [];
+  for (let i = 0; i <= 20; i++) {
+    const u = i / 20;
+    const r = 0.19 + u * 0.24;
+    const y = 0.02 - Math.sin(u * Math.PI) * 0.03 + Math.pow(u, 2.2) * 0.17;   // turned-up pirate brim
+    pts.push(new THREE.Vector2(r, y));
+  }
+  const brim = add(g, new THREE.Mesh(new THREE.LatheGeometry(pts, 48), M.hatDark), 'hat-wb-brim');
+  brim.scale.set(1.18, 1.0, 0.74);   // bicorne: wide side to side, narrow front to back
+  const crown = add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.225, 0.3, 48, 1, true), M.hatDark), 'hat-wb-crown');
+  crown.position.y = 0.16;
+  const crownTop = add(g, new THREE.Mesh(new THREE.SphereGeometry(0.19, 48, 18, 0, Math.PI*2, 0, Math.PI/2), M.hatDark), 'hat-wb-crown-top');
+  crownTop.scale.y = 0.45; crownTop.position.y = 0.305;
+  const trim = add(g, new THREE.Mesh(new THREE.TorusGeometry(0.222, 0.03, 16, 48), M.cream), 'hat-wb-trim');
+  trim.rotation.x = Math.PI/2; trim.position.y = 0.06;
+  const medal = add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.02, 32), M.cream), 'hat-wb-emblem');
+  medal.rotation.set(1.46, 0, 0); medal.position.set(0, 0.17, 0.196);
+  return g;
+}
+const wbHat = captainHat();
+wbHat.position.set(0.8, 2.6, 0.0);
+wbHat.rotation.set(-0.26, -0.3, -0.14);
+model.add(wbHat);
+
+/* ---------- naginata-style polearm leaning on the large cross ---------- */
+const pole = new THREE.Group(); pole.name = 'polearm';
+const shaftMesh = add(pole, new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.052, 2.3, 32), M.wood), 'polearm-shaft');
+shaftMesh.position.y = 1.15;
+for (let i = 0; i < 3; i++) {
+  const ring = add(pole, new THREE.Mesh(new THREE.TorusGeometry(0.052, 0.012, 12, 32), M.metal), 'polearm-ferrule-' + (i+1));
+  ring.rotation.x = Math.PI/2; ring.position.y = 0.5 + i * 0.6;
+}
+const bladeShape = new THREE.Shape();
+bladeShape.moveTo(0, 0);
+bladeShape.bezierCurveTo(0.1, 0.24, 0.2, 0.5, 0.26, 0.82);
+bladeShape.bezierCurveTo(0.14, 0.62, 0.02, 0.42, -0.04, 0.16);
+bladeShape.lineTo(0, 0);
+const blade = add(pole, new THREE.Mesh(new THREE.ExtrudeGeometry(bladeShape, { depth: 0.03, bevelEnabled: true, bevelSize: 0.012, bevelThickness: 0.008, bevelSegments: 2, curveSegments: 24 }), M.metal), 'polearm-blade');
+blade.position.set(0, 2.26, -0.015);
+const collar = add(pole, new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.1, 32), M.metal), 'polearm-collar');
+collar.position.y = 2.24;
+pole.position.set(1.62, 0.22, 0.2);
+pole.rotation.z = 0.17;
+pole.rotation.x = -0.06;
+model.add(pole);
+
+/* ---------- offerings: sake bottle and two cups ---------- */
+const offering = new THREE.Group(); offering.name = 'offering';
+const bottle = add(offering, new THREE.Mesh(new THREE.LatheGeometry([
+  new THREE.Vector2(0.001, 0), new THREE.Vector2(0.085, 0), new THREE.Vector2(0.09, 0.02),
+  new THREE.Vector2(0.09, 0.2), new THREE.Vector2(0.05, 0.27), new THREE.Vector2(0.035, 0.33),
+  new THREE.Vector2(0.045, 0.36), new THREE.Vector2(0.001, 0.362),
+], 40), M.cream), 'sake-bottle');
+bottle.position.set(0.06, 0.25, 0.62);
+const cupGeo = new THREE.CylinderGeometry(0.058, 0.042, 0.05, 32);
+[[-0.22, 0.58], [0.34, 0.66]].forEach(([x, z], i) => {
+  const c = add(offering, new THREE.Mesh(cupGeo, M.cream), 'sake-cup-' + (i+1));
+  c.position.set(x, 0.275, z);
+});
+model.add(offering);
+
+/* ---------- centre offering: a spray of blossoms (simple stems) ---------- */
+const flowers = new THREE.Group(); flowers.name = 'flowers';
+const petalGeo = new THREE.SphereGeometry(0.05, 20, 14);
+const stemGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.24, 12);
+[[-1.18, 0.55, 1.0], [-1.06, 0.42, 0.85], [-1.3, 0.66, 0.9]].forEach(([x, z, s], i) => {
+  const stem = add(flowers, new THREE.Mesh(stemGeo, M.wood), 'flower-stem-' + (i+1));
+  stem.position.set(x, 0.36, z);
+  stem.rotation.z = (i - 1) * 0.24;
+  const head = add(flowers, new THREE.Mesh(petalGeo, M.accent), 'flower-head-' + (i+1));
+  head.position.set(x + (i - 1) * 0.06, 0.48, z);
+  head.scale.set(s * 1.4, 0.9 * s, s * 1.4);
+});
+model.add(flowers);
+
+model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+stage.setObject(model);
+</script>
+</body>
+</html>

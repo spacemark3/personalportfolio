@@ -6,7 +6,4 @@ place: "AGM Solutions"
 span: "2023 - 2024"
 ---
 
-Developed responsive web applications and managed relational databases using
-HTML, CSS, JavaScript, and PHP. Built a full-stack CRUD photo album
-application using Laravel to master MVC architecture and modern backend
-design.
+I developed responsive web applications and managed relational databases using HTML, CSS, JavaScript, and PHP. I built a full-stack CRUD application for photo albums using Laravel to master MVC architecture and backend design. Additionally, I completed internal company training courses, gaining hands-on experience directly on the job.

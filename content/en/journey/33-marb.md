@@ -6,6 +6,4 @@ place: "MARB Srl"
 span: "2020 - 2021"
 ---
 
-Picked and packed orders for shipment, ensuring accuracy and efficiency in
-the fulfillment process. Developed strong organizational and time management
-skills while working in a fast-paced environment.
+During the COVID-19 pandemic, I worked in a food warehouse during a period of high demand for supermarkets. My role involved using a forklift to prepare pallets with requested products. Managing flexible hours alongside a long commute taught me to truly value time and helped me develop strong organizational skills.

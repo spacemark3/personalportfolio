@@ -15,11 +15,51 @@
     "switchTo": "English"
   },
   "about": {
-    "avatarLabel": "Un'illustrazione 3D di Mark Andro",
     "photoAlt": "Un ritratto fotografico di Mark Andro",
     "contactLabel": "Contatti",
     "contactPhone": "Telefono",
-    "contactEmail": "Email"
+    "contactEmail": "Email",
+    "island": {
+      "label": "Un'isola dei luoghi in cui succede questa storia — scegline uno per guardarlo da vicino",
+      "hint": "scegli un luogo",
+      "back": "torna all'isola",
+      "turn": "trascina per girare",
+      "me": "io",
+      "places": {
+        "bahay-kubo": {
+          "title": "il bahay kubo",
+          "body": "Da qui si comincia. Palafitte, bambù e un tetto di nipa: la casa che mi ha insegnato che una buona struttura è soprattutto ciò che togli."
+        },
+        "shore": {
+          "title": "la spiaggia",
+          "body": "Una banca tirata in secca e una palma inclinata sopra. Casa, e l’abitudine di arrangiarsi con quello che galleggia."
+        },
+        "sari-sari": {
+          "title": "il sari-sari store",
+          "body": "Un bancone, una tenda a righe, una striscia di bustine. La prima lezione sul consegnare poco e consegnare spesso."
+        },
+        "duomo": {
+          "title": "Milano",
+          "body": "Guglie di marmo sull’altra metà dell’isola. La città da cui lavoro adesso, lontana dalla prima."
+        },
+        "tram": {
+          "title": "il tram",
+          "body": "Arancione, senza fretta, più vecchio di chi ci sale, e ancora in orario. Un argomento a favore del mantenere le cose buone invece di sostituirle."
+        },
+        "studio": {
+          "title": "lo studio",
+          "body": "Una scrivania, un CRT ancora acceso, un ponteggio di fianco. Dove l’architettura si disegna — e si ridisegna."
+        },
+        "easel": {
+          "title": "il cavalletto",
+          "body": "Tela, pennelli, un taccuino aperto per terra. L’altra metà del lavoro, quella che tiene onesta la prima."
+        },
+        "graves": {
+          "title": "le tombe",
+          "body": "Due croci sul lato silenzioso dell’isola, ciascuna con appeso il cappello di chi vi riposa. La prova che una storia può finire e continuare comunque a insegnarti qualcosa, anni dopo."
+        }
+      }
+    }
   },
   "journey": {
     "contents": "Il mio percorso",
