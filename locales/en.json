@@ -5,6 +5,7 @@
   "nav": {
     "journey": "journey",
     "about": "about",
+    "blog": "blog",
     "inspiration": "inspiration",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -23,7 +24,6 @@
       "label": "An island of the places this story happens in — pick one to look closer",
       "hint": "click an element",
       "back": "back to the island",
-      "turn": "drag to turn",
       "me": "me",
       "places": {
         "bahay-kubo": {
@@ -66,6 +66,10 @@
     "contentsLabel": "Journey contents",
     "empty": "nothing here yet"
   },
+  "blog": {
+    "contents": "Writing",
+    "contentsLabel": "Blog contents"
+  },
   "sketchbook": {
     "previous": "previous page",
     "next": "next page"
@@ -86,6 +90,10 @@
     "journey": {
       "title": "Journey — Mark Andro",
       "description": "The work, the studies and the jobs in between — told in order."
+    },
+    "blog": {
+      "title": "Blog — Mark Andro",
+      "description": "Ideas, writing and opinions — whatever happens to be on my mind."
     },
     "inspiration": {
       "title": "Inspiration — Mark Andro",

@@ -64,7 +64,6 @@ export default async function AboutPage({ params }: PageParams) {
       <Island
         label={t.about.island.label}
         hint={t.about.island.hint}
-        turn={t.about.island.turn}
         back={t.about.island.back}
         places={t.about.island.places}
         meLabel={t.about.island.me}

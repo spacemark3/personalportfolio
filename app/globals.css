@@ -37,6 +37,14 @@
   /* big display type */
   /* strong ease-out for entrances (built-in `ease` is too weak) */
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  /* One knob for the whole site's type. Every font-size below is written as
+     calc(<its own size> * var(--fs)), so the sizes stay readable as the sizes
+     they were composed at and the scale is a single number to turn. The two
+     viewport-fitted sizes (the hero kicker, the inspiration verse) scale only
+     their px caps: their vw terms are what keep those lines on one row, and
+     multiplying those would put them back off the edge of a phone. */
+  --fs: 1.12;
+
   /* one spacing scale (4px base) — every gap/pad snaps to a step */
   --s-1: 4px;
   --s-2: 8px;
@@ -65,7 +73,7 @@
   padding: var(--s-3) var(--s-4);
   background: var(--ink);
   color: var(--paper);
-  font-size: 13px;
+  font-size: calc(13px * var(--fs));
   letter-spacing: var(--track-nav);
   border-radius: 4px;
   transform: translateY(-200%);
@@ -196,6 +204,14 @@ section {
 /* fixed, full-bleed, frosted — visible throughout, takes no flow space
    (which lets the hero center truly in the viewport) */
 .top {
+  /* One step up the site's type scale, and one step only: 1.26 is 1.12 taken
+     again, so the wordmark and the links keep exactly the proportion they were
+     drawn at — every size under here is calc(<its own size> * var(--fs)), and
+     this is the only line that changes. The bar is on every page and sits over
+     everything, so it was the one piece reading a size below what it labels.
+     It is set here rather than on .page so a journey page's header stays the
+     same header as everywhere else. */
+  --fs: 1.26;
   position: fixed;
   top: 0;
   left: 0;
@@ -303,7 +319,7 @@ section {
 }
 
 .top .name {
-  font-size: 15px;
+  font-size: calc(15px * var(--fs));
   font-weight: 300;
   /* display light */
   letter-spacing: var(--track-nav);
@@ -315,7 +331,7 @@ section {
 .top nav {
   display: flex;
   gap: var(--s-5);
-  font-size: 13px;
+  font-size: calc(13px * var(--fs));
   letter-spacing: var(--track-nav);
   align-items: center;
 }
@@ -347,7 +363,7 @@ section {
   }
 
   .top .name {
-    font-size: 13px;
+    font-size: calc(13px * var(--fs));
     padding: 6px 0;
   }
 
@@ -393,7 +409,7 @@ section {
   .top nav>a {
     padding: 12px 14px;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: calc(13px * var(--fs));
     letter-spacing: var(--track-nav);
   }
 
@@ -421,7 +437,7 @@ section {
 .section-label {
   font-weight: 400;
   /* h2 defaults to bold; nothing on this site is bold */
-  font-size: 12px;
+  font-size: calc(12px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -493,19 +509,15 @@ section {
    whatever box that leaves it (homeDist in Island.tsx), and a band this wide
    is bound by its height, so the island fills it. */
 .island-stage {
-  position: relative; /* the containing block for .island-turn */
+  position: relative;
   height: clamp(240px, 44vh, 420px);
   opacity: 0;
   transition: opacity 0.7s var(--ease-out-strong);
-  /* pan-y, so a horizontal drag turns the island and a vertical one is given
-     back to the page. A canvas that swallowed both would trap a thumb trying
-     to scroll past it — and the island's 360° is all in the azimuth anyway;
-     the tilt is the part a phone can do without. */
-  touch-action: pan-y;
+  /* the island turns by itself and is never taken hold of, so a touch here is
+     the page's to scroll with — nothing to carve out of touch-action. The
+     cursor is the default until the pointer is over a landmark, where
+     Island.tsx swaps in a pointer: the water is scenery, not a control. */
   -webkit-tap-highlight-color: transparent;
-  /* grab, grabbing and pointer are swapped in by Island.tsx as the pointer
-     moves; this is what the stage says before three.js has arrived */
-  cursor: grab;
 
   box-shadow: 10px 10px 108px 0px var(--paper) inset;
   -webkit-box-shadow: 10px 10px 108px 0px var(--paper) inset;
@@ -514,26 +526,6 @@ section {
 
 .island-stage[data-ready] {
   opacity: 1;
-}
-
-/* The one thing that says the island turns, over its bottom-left corner. It
-   is positioned and the canvas beside it is not, so it paints on top without
-   a z-index, and it never takes a pointer that was meant for the water. */
-.island-turn {
-  position: absolute;
-  left: var(--s-4);
-  bottom: var(--s-4);
-  font-size: 10px;
-  letter-spacing: var(--track-caps);
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  pointer-events: none;
-  transition: opacity 0.8s var(--ease-out-strong);
-}
-
-/* and retires, once it has been done */
-.island-turn[data-turned] {
-  opacity: 0;
 }
 
 .island-stage canvas {
@@ -560,21 +552,17 @@ section {
 /* flow-root so the floated portrait is contained rather than hanging out of
    the bottom of a short description.
 
-   A fixed height (not a floor) — whichever of the nine is speaking, or the
-   resting bio, the box is the same size, so the list below it never moves and
-   neither does the caption's own bottom edge. 24rem clears the resting stack
-   (150px portrait + three bio paragraphs + contacts) at the larger type below
-   with room to spare; overflow-y is a safety net for a future landmark whose
-   copy runs unexpectedly long, not the expected case. */
+   No height and no overflow: the caption is as tall as whatever is speaking
+   through it. It used to be a fixed 24rem box with a scrollbar, which is what
+   the list of places below it bought — and the list is under the island now,
+   so the whole column is the caption's and there is nothing left to clip. */
 .island-caption {
   display: flow-root;
   max-width: 64ch;
-  height: 24rem;
-  overflow-y: auto;
 }
 
 .island-caption-t {
-  font-size: 14px;
+  font-size: calc(14px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink);
@@ -586,7 +574,7 @@ section {
 .island-bio {
   max-width: 42ch;
   margin-top: var(--s-3);
-  font-size: 17px;
+  font-size: calc(17px * var(--fs));
   line-height: 1.7;
   letter-spacing: 0.02em;
   color: var(--ink-soft);
@@ -596,7 +584,7 @@ section {
    for instructions */
 .island-hint {
   margin-bottom: var(--s-3);
-  font-size: 11px;
+  font-size: calc(11px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -608,7 +596,7 @@ section {
   background: none;
   border: 0;
   font: inherit;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs));
   letter-spacing: var(--track-nav);
   color: var(--ink-soft);
   text-decoration: underline;
@@ -639,7 +627,7 @@ section {
   border: 0;
   border-radius: 999px;
   font: inherit;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs));
   letter-spacing: 0.025em;
   color: var(--ink-soft);
   cursor: pointer;
@@ -656,17 +644,18 @@ section {
   color: var(--ink);
 }
 
-/* Wider: the stage moves to the left three quarters of the row and grows
-   taller with it, and the caption + the list of places move beside it on the
-   right rather than underneath it. Two rows in that right column so the
-   caption sits over the index, the way they already stack below this
-   breakpoint. */
+/* Wider: the stage takes the left of the row and grows taller with it, the
+   nine places lie across the page underneath it, and the caption stands in
+   the right-hand column beside both. The places are a horizontal row rather
+   than a list down the side because the caption needs the full height of the
+   column — the description, the portrait and the contacts all told — and
+   that is what keeps it from being a box with a scrollbar in it. */
 @media (min-width: 861px) {
   .island {
-    grid-template-columns: minmax(0, 3fr) minmax(240px, 1fr);
+    grid-template-columns: minmax(0, 2.6fr) minmax(280px, 1fr);
     grid-template-areas:
       "stage caption"
-      "stage index";
+      "index caption";
     align-items: start;
   }
 
@@ -717,7 +706,7 @@ section {
 .about-contact-k {
   flex: none;
   width: 6.5em;
-  font-size: 10px;
+  font-size: calc(10px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -727,7 +716,7 @@ section {
    and the wrapping are this element's own. An email address has no spaces
    to break at, so a narrow phone gets anywhere rather than a scrollbar. */
 .about-contact-v {
-  font-size: 14px;
+  font-size: calc(14px * var(--fs));
   letter-spacing: 0.025em;
   overflow-wrap: anywhere;
 }
@@ -783,7 +772,7 @@ section {
      the tracking; min() pins it back to 10.5px from ~456px up, so desktop
      is unchanged. Retune the 2.3vw if the eyebrow copy gets longer. */
   white-space: nowrap;
-  font-size: min(10.5px, 2.3vw);
+  font-size: min(calc(10.5px * var(--fs)), 2.3vw);
   font-weight: 400;
   letter-spacing: var(--track-caps);
   text-align: center;
@@ -953,7 +942,7 @@ section {
 }
 
 .sb-caption {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -1174,7 +1163,7 @@ section {
 
 /* a section that has no entries yet */
 .empty-note {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -1273,7 +1262,7 @@ section {
      around 8px — below that width it wraps, because unreadable is worse than
      wrapped. */
   max-width: 84vw;
-  font-size: max(13px, min(17px, calc(84vw / (var(--ip-chars, 50) * 0.72))));
+  font-size: max(calc(13px * var(--fs)), min(calc(17px * var(--fs)), calc(84vw / (var(--ip-chars, 50) * 0.72))));
   font-weight: 300;
   line-height: 1.9;
   letter-spacing: var(--track-nav);
@@ -1713,16 +1702,35 @@ section {
    The outer stop is 0.74, not the near-opaque 0.92 this started at: the
    collage and the line stay FAINTLY present everywhere — about a quarter
    visible, enough to sense the crowd — and the beam brings whatever it
-   crosses up to full. A light in a dim room, not a keyhole. */
+   crosses up to full. A light in a dim room, not a keyhole.
+
+   The radius is a token because the phone wants a different one, and only
+   the phone: 300px there is not a beam at all — the clear core alone is most
+   of a 375px screen and the dark never closes back in, so the whole conceit
+   (one light, moved by the reader) reads as the page simply being lit. The
+   stops are percentages of the radius, so the soft core and the falloff come
+   down with it rather than needing sizes of their own. */
 .ip-beam {
+  --ip-beam-r: 300px;
   transition-duration: 1.4s;
   transition-delay: var(--ip-act2);
   /* stays dark through act 1 */
-  background: radial-gradient(circle 300px at var(--x) var(--y),
+  background: radial-gradient(circle var(--ip-beam-r) at var(--x) var(--y),
       rgba(6, 6, 8, 0) 0%,
       rgba(6, 6, 8, 0) 38%,
       rgba(6, 6, 8, 0.68) 78%,
       rgba(6, 6, 8, 0.74) 100%);
+}
+
+/* A torch, at the site's phone breakpoint. 34vw is about 128px on a 375px
+   handset: a 48px clear core, full dark by 100px, and both edges of the
+   screen still dark with the light in the middle of it — which is the whole
+   point of a beam and is what 300px could not do at this width. In vw rather
+   than px so it holds its share of a 320px phone and of a 640px one alike. */
+@media (max-width: 640px) {
+  .ip-beam {
+    --ip-beam-r: 34vw;
+  }
 }
 
 /* The global reduced-motion rule collapses durations but NOT delays, so
@@ -1793,7 +1801,7 @@ section {
 
 .back {
   display: inline-block;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs));
   letter-spacing: var(--track-nav);
   color: var(--ink-soft);
   transition: color 0.2s;
@@ -1920,12 +1928,12 @@ section {
 }
 
 .work-card .cap .t {
-  font-size: 14px;
+  font-size: calc(14px * var(--fs));
   letter-spacing: 0.03em;
 }
 
 .work-card .cap .n {
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--fs));
   color: rgba(255, 255, 255, 0.75);
   letter-spacing: 0.02em;
   text-align: right;
@@ -1967,7 +1975,7 @@ section {
 }
 
 .site-foot-c {
-  font-size: 13px;
+  font-size: calc(13px * var(--fs));
   letter-spacing: 0.02em;
   color: var(--ink);
 }
@@ -1986,6 +1994,16 @@ section {
 
 /* ---------- journey: a shelf of books, laid flat ---------- */
 
+/* The shelf is the one page that is all reading, so it takes the same step
+   past the site scale the nav bar does — the lede, the contents and every
+   spine and leaf at once, which is what keeps the page in tune with itself.
+   The nav and the footer are left out on purpose: they are the same furniture
+   on every page and should be the same size on every page. */
+.jr-open,
+.journey-layout {
+  --fs: 1.26;
+}
+
 /* One vertical layout at every width: chapters stack top to bottom, each
    entry is a full-width title bar, and opening one expands its panel
    downward (0fr → 1fr on grid-template-rows, nothing measured in JS). This
@@ -1994,18 +2012,17 @@ section {
    design to keep in sync now. */
 
 /* the opening line is this page's title, so it is centered and given the
-   whole column instead of the 46ch reading measure the body copy uses — at
-   desktop width that lands it on a single line. Deliberately not nowrap:
-   the column clears the sentence by only a few dozen pixels, and a font
-   rendering a touch wide would open a horizontal scroll track. If it does
-   wrap, balance splits it into even lines rather than a long one plus an
-   orphan. */
+   whole column instead of the 46ch reading measure the body copy uses. It ran
+   to a single line at the size it was first set; at the sizes above it takes
+   two, which is why it must never be nowrap — a sentence this long held on
+   one row would open a horizontal scroll track. balance is what splits it
+   into even lines rather than a long one plus an orphan. */
 .jr-open {
   max-width: none;
   margin-inline: auto;
   text-align: left;
   text-wrap: balance;
-  font-size: 20px;
+  font-size: calc(20px * var(--fs));
   line-height: 1.8;
   letter-spacing: 0.02em;
   color: var(--ink-soft);
@@ -2079,7 +2096,7 @@ section {
 }
 
 .jr-index-h {
-  font-size: 11px;
+  font-size: calc(11px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink);
@@ -2092,7 +2109,7 @@ section {
 }
 
 .jr-index-label {
-  font-size: 10px;
+  font-size: calc(10px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: rgba(29, 31, 34, 0.5);
@@ -2138,7 +2155,10 @@ section {
 .jr-index-dot {
   position: absolute;
   left: -3.5px;
-  top: 12px;
+  /* centred on the first line of the entry rather than a measured 12px from
+     the top: the item's 7px padding plus half a 12.5px/1.35 line, so the bead
+     stays on the lead's midline at whatever --fs the page is set to. */
+  top: calc(4px + 8.44px * var(--fs));
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -2157,14 +2177,14 @@ section {
 
 .jr-index-lead {
   display: block;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--fs));
   line-height: 1.35;
   letter-spacing: 0.02em;
 }
 
 .jr-index-when {
   display: block;
-  font-size: 10px;
+  font-size: calc(10px * var(--fs));
   letter-spacing: var(--track-nav);
   text-transform: uppercase;
   color: rgba(29, 31, 34, 0.55);
@@ -2208,7 +2228,7 @@ section {
 .shelf-label {
   font-weight: 400;
   /* h2 defaults to bold; nothing on this site is bold */
-  font-size: 12px;
+  font-size: calc(12px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink);
@@ -2314,18 +2334,18 @@ section {
 }
 
 .spine-title {
-  font-size: 15px;
+  font-size: calc(15px * var(--fs));
   letter-spacing: 0.02em;
 }
 
 .spine-place {
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--fs));
   letter-spacing: var(--track-nav);
   color: var(--ink-soft);
 }
 
 .spine-when {
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--fs));
   letter-spacing: var(--track-nav);
   color: var(--ink-soft);
   flex: none;
@@ -2374,7 +2394,7 @@ section {
 }
 
 .leaf-when {
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   /* 0.72 to match .spine-place/.spine-when on the same open-book ground */
@@ -2384,14 +2404,14 @@ section {
 .leaf-title {
   margin-top: var(--s-2);
   font-weight: 300;
-  font-size: clamp(20px, 2.4vw, 26px);
+  font-size: clamp(calc(20px * var(--fs)), 2.4vw, calc(26px * var(--fs)));
   line-height: 1.2;
   letter-spacing: var(--track-display);
 }
 
 .leaf-place {
   margin-top: 5px;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs));
   letter-spacing: var(--track-nav);
   color: rgba(29, 31, 34, 0.7);
 }
@@ -2401,7 +2421,7 @@ section {
    two tracked-out lines in a row would read as one block. */
 .leaf-scope {
   margin-top: var(--s-5);
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--fs));
   line-height: 1.7;
   letter-spacing: 0.02em;
   color: rgba(29, 31, 34, 0.74);
@@ -2411,7 +2431,7 @@ section {
    wherever it appears on the site */
 .leaf-body {
   margin-top: var(--s-4);
-  font-size: 15px;
+  font-size: calc(15px * var(--fs));
   line-height: 1.95;
   letter-spacing: 0.025em;
   color: var(--ink);
@@ -2430,11 +2450,459 @@ section {
 
 .leaf-note {
   margin-top: var(--s-5);
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--fs));
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   /* see .leaf-when for why this is 0.72, not 0.66 */
   color: rgba(29, 31, 34, 0.72);
+}
+
+/* ---------- blog: an index and a column of writing ----------
+   Two things: the contents on the left and the post on the right. Every post
+   is its own page, so the left column is the same on all of them and only the
+   right one changes — which is why nothing here watches a scroll position the
+   way the journey's index has to.
+
+   The index is a near-copy of the journey's rather than a share of it. They
+   are meant to look like the same drawing, but one is a list of anchors into a
+   single page and the other is navigation between pages, and they answer to
+   different things: the blog's has a phone fold and marks by URL, the
+   journey's marks by scroll and jumps. Held apart so either can move. */
+
+/* The same step past the site scale the journey's reading column takes, and
+   for the same reason — this is a page you read rather than scan. On the
+   layout, never on .page.blog, so the nav above and the footer below stay the
+   size they are on every other page. */
+.blog-layout {
+  --fs: 1.26;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---- the index ----
+   Narrow first, and NOT the journey's answer. That page drops its index below
+   980px because the run of shut spines already is the contents; here the index
+   is the only way to reach another post, so it stays — folded behind its own
+   line, so a post still opens at its title rather than under a screenful of
+   list. The fold is the one piece of state on the page (BlogIndex.tsx). */
+.bl-index {
+  margin-bottom: clamp(24px, 4vh, 40px);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: var(--s-4);
+}
+
+/* the line that unfolds it. Phones only — from 980px the index has a column of
+   its own and there is nothing to fold. */
+.bl-index-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3) 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: calc(11px * var(--fs));
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.bl-index-toggle:hover {
+  color: var(--ink);
+}
+
+/* a triangle in CSS rather than a glyph or an SVG: it is 6px of decoration
+   that has to point two ways, and borders do that without loading anything */
+.bl-index-caret {
+  flex: none;
+  width: 0;
+  height: 0;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.3s var(--ease-out-strong);
+}
+
+/* one rule for both folds — the phone's whole-index line and each category */
+[aria-expanded="true"] > .bl-index-caret {
+  transform: rotate(90deg);
+}
+
+/* Shut by default at this width, and the heading inside it is redundant with
+   the line that opened it — the button already says "contents". */
+.bl-index-body {
+  display: none;
+  max-height: 46vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.bl-index-body[data-open] {
+  display: block;
+}
+
+.bl-index-h {
+  display: none;
+}
+
+/* ---- the index's type: the journey's vocabulary, spelled for this page ---- */
+
+.bl-index-group {
+  margin-top: var(--s-4);
+}
+
+/* The category, and the control that folds it — a whole group of posts costs
+   one line when it is shut, which is the point: this blog is about anything,
+   so the categories are the part that grows, and an index that showed every
+   post under every one of them would be a page of its own.
+   Free text out of a post's frontmatter, so this is the one line on the page
+   whose words the writing decides. */
+.bl-index-label {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-2) 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: calc(10px * var(--fs));
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  text-align: left;
+  color: rgba(29, 31, 34, 0.5);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.bl-index-label:hover,
+.bl-index-label[aria-expanded="true"] {
+  color: rgba(29, 31, 34, 0.78);
+}
+
+/* takes the room, so the count is pushed to the far edge */
+.bl-index-cat {
+  flex: 1;
+  min-width: 0;
+}
+
+/* how much is folded away in there — a shut category still says whether it is
+   worth opening. Tracked like the rest of the small caps but a step lighter,
+   so it reads as an aside to the name rather than part of it. */
+.bl-index-count {
+  flex: none;
+  letter-spacing: var(--track-nav);
+  color: rgba(29, 31, 34, 0.38);
+}
+
+/* the posts, when the category is open. `hidden` is the React side of the
+   same state the caret shows; this is only here so a display rule added to
+   the list later cannot quietly outrank the attribute. */
+.bl-index-list[hidden] {
+  display: none;
+}
+
+.bl-index-list:not([hidden]) {
+  margin-bottom: var(--s-3);
+}
+
+/* the rail every post hangs off — the same hairline the journey's index uses,
+   so the two pages read as one drawing */
+.bl-index-list {
+  list-style: none;
+  border-left: 1px solid var(--hairline);
+}
+
+.bl-index-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px var(--s-3) 7px var(--s-4);
+  color: var(--ink-soft);
+  transition: background 0.35s var(--ease-out-strong), color 0.35s var(--ease-out-strong);
+}
+
+.bl-index-item:hover {
+  color: var(--ink);
+  background: rgba(29, 31, 34, 0.05);
+}
+
+/* the post you are reading. Ink, not colour — twice the hover's weight, so
+   "where you are" still outranks "what you are pointing at". */
+.bl-index-item[data-here] {
+  color: var(--ink);
+  background: rgba(29, 31, 34, 0.1);
+}
+
+.bl-index-item[data-here]:hover {
+  background: rgba(29, 31, 34, 0.1);
+}
+
+/* the bead on the rail. Its top is half a line down from the item's 7px
+   padding, so it stays on the title's midline at whatever --fs the page is
+   set to — the 8.44px is 12.5px × 1.35 ÷ 2, this list's own line. */
+.bl-index-dot {
+  position: absolute;
+  left: -3.5px;
+  top: calc(4px + 8.44px * var(--fs));
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+  transform: scale(0);
+  transition: transform 0.4s var(--ease-out-strong);
+}
+
+.bl-index-item:hover .bl-index-dot {
+  transform: scale(0.55);
+}
+
+.bl-index-item[data-here] .bl-index-dot {
+  transform: scale(1);
+}
+
+.bl-index-lead {
+  display: block;
+  font-size: calc(12.5px * var(--fs));
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.bl-index-when {
+  display: block;
+  font-size: calc(10px * var(--fs));
+  letter-spacing: var(--track-nav);
+  text-transform: uppercase;
+  color: rgba(29, 31, 34, 0.55);
+}
+
+.bl-index-item[data-here] .bl-index-when {
+  color: rgba(29, 31, 34, 0.72);
+}
+
+/* ---- the post ---- */
+
+.blog-post {
+  min-width: 0;
+}
+
+.blog-kicker {
+  font-size: calc(11.5px * var(--fs));
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.blog-title {
+  margin-top: var(--s-2);
+  font-weight: 300;
+  /* light for display, like every other large line on the site */
+  font-size: clamp(calc(24px * var(--fs)), 3.2vw, calc(34px * var(--fs)));
+  line-height: 1.2;
+  letter-spacing: var(--track-display);
+  text-wrap: balance;
+}
+
+.blog-when {
+  display: block;
+  margin-top: var(--s-3);
+  font-size: calc(11.5px * var(--fs));
+  letter-spacing: var(--track-nav);
+  text-transform: uppercase;
+  color: rgba(29, 31, 34, 0.6);
+}
+
+/* the post's one line about itself, set like the journey's .leaf-scope */
+.blog-summary {
+  max-width: 52ch;
+  margin-top: var(--s-4);
+  font-size: calc(13.5px * var(--fs));
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  color: rgba(29, 31, 34, 0.74);
+}
+
+/* ---- the writing ----
+   Markdown cannot write a class, so this whole block is styled by element. It
+   is the same setting as the journey's .leaf-body — 15px, 1.95, a hair of
+   tracking — without the drop cap: that belongs to an entry of one paragraph,
+   and a cap on each of a dozen would be noise. */
+.blog-body {
+  max-width: 68ch;
+  margin-top: clamp(28px, 4vh, 44px);
+  padding-top: clamp(28px, 4vh, 44px);
+  border-top: 1px solid var(--hairline);
+  font-size: calc(15px * var(--fs));
+  line-height: 1.95;
+  letter-spacing: 0.025em;
+  color: var(--ink);
+}
+
+/* one rhythm for everything in it, whatever the element */
+.blog-body > * + * {
+  margin-top: var(--s-4);
+}
+
+.blog-body h2 {
+  margin-top: clamp(32px, 5vh, 56px);
+  font-weight: 300;
+  font-size: calc(19px * var(--fs));
+  line-height: 1.3;
+  letter-spacing: var(--track-display);
+}
+
+.blog-body h3 {
+  margin-top: clamp(24px, 4vh, 40px);
+  font-weight: 400;
+  font-size: calc(15.5px * var(--fs));
+  letter-spacing: 0.02em;
+}
+
+/* the reset at the top of this file zeroes every padding, which takes the
+   markers off the page with it — this is what puts them back */
+.blog-body ul,
+.blog-body ol {
+  padding-left: var(--s-5);
+}
+
+.blog-body li + li {
+  margin-top: var(--s-2);
+}
+
+.blog-body blockquote {
+  border-left: 1px solid var(--hairline);
+  padding-left: var(--s-5);
+  color: var(--ink-soft);
+}
+
+/* Markdown writes a bare <a>, so the site's one in-prose link language —
+   .bio-link, applied by hand everywhere else — is applied by selector here. */
+.blog-body a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(29, 31, 34, 0.25);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+}
+
+.blog-body a:hover {
+  text-decoration-color: var(--ink);
+}
+
+.blog-body code {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(29, 31, 34, 0.06);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  letter-spacing: 0;
+}
+
+/* a block scrolls inside itself rather than opening a scroll track across the
+   page — the same bargain the rest of the site makes with overflow-x */
+.blog-body pre {
+  overflow-x: auto;
+  padding: var(--s-4);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  line-height: 1.6;
+}
+
+.blog-body pre code {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+}
+
+.blog-body img {
+  margin-block: var(--s-5);
+  border-radius: 8px;
+}
+
+.blog-body hr {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin-block: clamp(32px, 5vh, 56px);
+}
+
+/* 500 is a face this site actually loads (futura-medium); the browser's
+   default 700 would be synthesised out of one it doesn't have */
+.blog-body strong {
+  font-weight: 500;
+}
+
+/* Wider: the index takes a column of its own beside the writing and stays with
+   the reader down the page, the fold is retired, and the page widens to the
+   journey's measure to make room. The sticky offsets are that page's numbers,
+   because they are tuned to the same fixed header. */
+@media (min-width: 980px) {
+  .page.blog {
+    max-width: 1160px;
+  }
+
+  .blog-layout {
+    grid-template-columns: minmax(168px, 216px) minmax(0, 1fr);
+    gap: clamp(32px, 4.5vw, 72px);
+    align-items: start;
+  }
+
+  .bl-index {
+    position: sticky;
+    top: 104px;
+    max-height: calc(100dvh - 148px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin-bottom: 0;
+    padding-bottom: var(--s-4);
+    border-bottom: 0;
+    /* the scrollbar is a hairline, not a chrome widget — same weight and ink
+       as the rail the posts hang off. Firefox takes the two properties below;
+       WebKit/Blink take the ::-webkit- rules. */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(29, 31, 34, 0.22) transparent;
+  }
+
+  .bl-index::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  .bl-index::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .bl-index::-webkit-scrollbar-thumb {
+    background: rgba(29, 31, 34, 0.22);
+    transition: background 0.3s var(--ease-out-strong);
+  }
+
+  .bl-index:hover::-webkit-scrollbar-thumb {
+    background: rgba(29, 31, 34, 0.4);
+  }
+
+  .bl-index-toggle {
+    display: none;
+  }
+
+  /* no fold to open, so the list is simply here, with its own heading back */
+  .bl-index-body {
+    display: block;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .bl-index-h {
+    display: block;
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--hairline);
+    font-size: calc(11px * var(--fs));
+    letter-spacing: var(--track-caps);
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
 }
 
 /* ---------- language: the switcher, and the / gate ---------- */
@@ -2449,7 +2917,7 @@ section {
   margin-left: var(--s-1);
   padding-left: var(--s-4);
   border-left: 1px solid var(--hairline);
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--fs));
   letter-spacing: var(--track-caps);
 }
 
@@ -2490,7 +2958,7 @@ section {
 }
 
 .lang-gate-h {
-  font-size: 15px;
+  font-size: calc(15px * var(--fs));
   font-weight: 300;
   letter-spacing: var(--track-nav);
 }
@@ -2498,7 +2966,7 @@ section {
 .lang-gate-links {
   display: flex;
   gap: var(--s-5);
-  font-size: 13px;
+  font-size: calc(13px * var(--fs));
   letter-spacing: var(--track-nav);
   color: var(--ink-soft);
 }

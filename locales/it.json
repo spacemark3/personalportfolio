@@ -5,6 +5,7 @@
   "nav": {
     "journey": "esperienza",
     "about": "profilo",
+    "blog": "blog",
     "inspiration": "ispirazione",
     "openMenu": "apri",
     "closeMenu": "chiudi",
@@ -23,7 +24,6 @@
       "label": "Un'isola dei luoghi in cui succede questa storia — scegline uno per guardarlo da vicino",
       "hint": "scegli un luogo",
       "back": "torna all'isola",
-      "turn": "trascina per girare",
       "me": "io",
       "places": {
         "bahay-kubo": {
@@ -66,6 +66,10 @@
     "contentsLabel": "Indice del percorso",
     "empty": "IN LAVORAZIONE"
   },
+  "blog": {
+    "contents": "Scritti",
+    "contentsLabel": "Indice del blog"
+  },
   "sketchbook": {
     "previous": "pagina precedente",
     "next": "pagina successiva"
@@ -86,6 +90,10 @@
     "journey": {
       "title": "Percorso — Mark Andro",
       "description": "Il lavoro, gli studi e i mestieri nel mezzo — raccontati in ordine."
+    },
+    "blog": {
+      "title": "Blog — Mark Andro",
+      "description": "Idee, scritti e opinioni — quello che mi passa per la testa."
     },
     "inspiration": {
       "title": "Ispirazione — Mark Andro",

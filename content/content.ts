@@ -49,6 +49,22 @@ export type JourneyEntry = {
   note?: string; // optional aside: credential ID, honours, the stack
 };
 
+// ---------- blog ----------
+// The shape lib/content.ts builds out of content/<locale>/blog/*.md, one file
+// per post, and that components/BlogLayout.tsx renders. The filename is the
+// URL, `date` is the order, and `category` is the only taxonomy: the index
+// builds its groups out of whatever categories the posts happen to name, so
+// writing about something new needs a new word rather than a new list.
+export type BlogPost = {
+  slug: string; // the filename, which is the URL
+  title: string;
+  date: string; // "YYYY-MM-DD" as authored; formatted per locale at render
+  category: string; // free text — a new one just appears in the index
+  summary?: string; // one line under the title, and the page's meta description
+  /** the whole post as block HTML: headings, lists, quotes, code */
+  bodyHtml: string;
+};
+
 // `lead` picks which line the spine sets in the large type. Chapters default
 // to the role ("title"); a chapter set to "place" leads with the company
 // instead, for work whose interest is where it happened, not the job title.

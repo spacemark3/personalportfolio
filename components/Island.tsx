@@ -7,8 +7,9 @@ import type { FocusKey, LandmarkKey } from "@/components/island/landmarks";
 // The About page. The island is the page — the places the bio is about,
 // modelled and put on one rock, with the figure standing on the seam path
 // between the two halves of it. It is a map you walk into rather than a scene
-// you watch: the camera drifts around the island until you pick something,
-// then flies to the shot that thing was placed for and holds there.
+// you watch: the camera turns slowly around the island on its own until you
+// pick something, then flies to the shot that thing was placed for and holds
+// there.
 //
 // The description is the figure's caption — and so are the photograph and the
 // contacts, which is why all three are on screen together or not at all. It is
@@ -34,19 +35,8 @@ const FOV = 38;
 // 0.52 is about 30°: high enough to see both halves of the island at once,
 // shallow enough that the props keep their elevation instead of flattening
 // into a floor plan. The azimuth is not fixed here — it is what the drift
-// turns, and what a drag turns faster.
+// turns; the elevation only ever moves when a landmark's own shot asks for it.
 const OVERVIEW_EL = 0.52;
-// How far up and down a drag may take it. Below the first it slips under the
-// water and looks at the rock's underside; above the second it is straight
-// overhead and the island reads as a floor plan.
-const EL_MIN = 0.16;
-const EL_MAX = 1.3;
-// A drag the height of the stage turns the island a full circle. Height for
-// both axes, and that is what three's own OrbitControls uses — so the island
-// turns at the rate a hand that has touched any other 3D thing expects.
-const TURN_PER_HEIGHT = Math.PI * 2;
-// pointer travel, in px, past which a press was a turn and not a pick
-const DRAG_SLOP = 6;
 // Air around the island at the widest shot — under 1 crops it. Pulled in well
 // past the zero-clip point (1.06) for a tighter, more "held in the hand" shot;
 // the tallest points (a spire tip, a frond) now graze the frame at the widest
@@ -69,10 +59,6 @@ const HALF_FOV_TAN = Math.tan((FOV * Math.PI) / 360);
 // lands a landmark in a little under a second and, more to the point, arrives
 // slowly: the last tenth of the move is where the shot settles.
 const EASE = 0.055;
-// Except under a finger. A travelling shot wants to arrive gently; a hand
-// turning something wants it to move now, and 0.055 under a drag feels like
-// the island is being pulled through treacle.
-const DRAG_EASE = 0.38;
 
 // How far a landmark rises when the pointer is on it, in model units. Small on
 // purpose: it answers the cursor without becoming a jumping thing.
@@ -104,7 +90,6 @@ export type Place = { title: string; body: string };
 export default function Island({
   label,
   hint,
-  turn,
   back,
   places,
   name,
@@ -115,8 +100,6 @@ export default function Island({
 }: {
   label: string;
   hint: string;
-  /** the line over the island itself, until someone has turned it */
-  turn: string;
   back: string;
   places: Record<LandmarkKey, Place>;
   /** whose island it is — the caption's title when the bio is showing */
@@ -145,10 +128,6 @@ export default function Island({
   // moment to download, and a place picked from the list in that moment has to
   // still be the shot the island opens on
   const selectedRef = useRef<FocusKey | null>(null);
-  // true once the island has been turned by hand. All it does is retire the
-  // line telling you that you can: an instruction that stays after it has been
-  // followed is just furniture.
-  const [turned, setTurned] = useState(false);
   const hintId = useId();
 
   useEffect(() => {
@@ -267,14 +246,14 @@ export default function Island({
       // rim nearest the camera is a third closer than the island's centre and
       // projects far larger than any flat estimate predicts. Solved flat, the
       // island is cropped top and bottom at every stage wider than about 4:3,
-      // and at every stage once the tilt can be dragged.
+      // and at every stage taller than the island is wide.
       //
       // So it is solved against a shape instead: the smallest cylinder holding
       // the island, sampled as points. For a camera at pivot + d·u the depth of
       // a point is (d - q·u) while its height and width on screen do not depend
       // on d at all — so each point states a minimum d outright, and the
       // largest of those minima frames every one of them. Exact, one pass, no
-      // iteration, and it answers for any direction the drag can reach.
+      // iteration, and it answers for every azimuth the drift turns through.
       const HULL_STEPS = 32;
       const hull: THREE_T.Vector3[] = [];
       for (let i = 0; i < HULL_STEPS; i++) {
@@ -311,8 +290,7 @@ export default function Island({
 
       // The orbit, and the whole of the camera's freedom: what it is circling,
       // how far out, and where on that circle it stands. One set of numbers for
-      // both the wide shot and a landmark — which is what lets a drag turn the
-      // island either way round, rather than only when nothing is chosen.
+      // both the wide shot and a landmark, so the two are the same move.
       const pivot = homeTarget.clone();
       let range = 0;
       // Azimuth: a little off +z puts the sand on the left and the cobbles on
@@ -322,10 +300,9 @@ export default function Island({
       let aspect = 1;
 
       // Where the camera stands, for the orbit it is on. At the wide shot the
-      // range is re-solved here rather than stored, because tilting changes
-      // what the frame has to hold: drag the camera up and it pulls back, so
-      // the island stays whole at every angle. On a landmark the range is that
-      // landmark's own — those shots were composed, not solved.
+      // range is re-solved here rather than stored, so a resize — or the next
+      // degree of the turn — reframes instead of cropping. On a landmark the
+      // range is that landmark's own: those shots were composed, not solved.
       const dir = new THREE.Vector3();
       const station = (out: THREE_T.Vector3) => {
         dir.set(Math.cos(az) * Math.cos(el), Math.sin(el), Math.sin(az) * Math.cos(el));
@@ -339,7 +316,7 @@ export default function Island({
         current = k;
         const lm = k ? landmarks.find((l) => l.key === k) : null;
         if (lm) {
-          // the placement's direction, read back as an orbit the drag can move
+          // the placement's direction, read back as a point on the same orbit
           az = Math.atan2(lm.offsetDir.z, lm.offsetDir.x);
           el = Math.asin(clamp(lm.offsetDir.y, -1, 1));
           pivot.copy(lm.focus);
@@ -348,7 +325,7 @@ export default function Island({
           // az and el are left exactly as they are: coming back from a landmark
           // pulls straight out to the wide shot from the angle you were already
           // looking at it from, rather than swinging round to one nothing asked
-          // for. Only what the camera circles, and how far out, change.
+          // for — and the drift picks up again from there.
           pivot.copy(homeTarget);
         }
         wantTarget.copy(pivot);
@@ -399,79 +376,24 @@ export default function Island({
         return o ? (o.userData.key as FocusKey) : null;
       };
 
-      // what the cursor is over, and the cursor that says so — grab over open
-      // water, because that is the only thing announcing that the island turns
+      // what the cursor is over, and the cursor that says so — a pointer on a
+      // landmark, and nothing over open water, which is not a control
       const pick = () => {
         hovered = at(ptrX, ptrY);
-        host.style.cursor = dragging ? "grabbing" : hovered ? "pointer" : "grab";
+        host.style.cursor = hovered ? "pointer" : "";
       };
 
-      // the turn in progress: which pointer owns it, where it last was, and how
-      // far it has travelled since it went down
-      let dragging = false;
-      let dragId = -1;
-      let lastX = 0;
-      let lastY = 0;
-      let travelled = 0;
-      // so the "drag to turn" line is retired once, and not on every frame of
-      // every drag after it
-      let announced = false;
-
-      const onDown = (e: PointerEvent) => {
-        if (e.button !== 0) return; // the primary button only; right-click is the browser's
-        dragging = true;
-        dragId = e.pointerId;
-        lastX = e.clientX;
-        lastY = e.clientY;
-        travelled = 0;
-        // so the turn survives the pointer leaving the canvas mid-drag
-        host.setPointerCapture(e.pointerId);
-        host.style.cursor = "grabbing";
-      };
-
-      // A pointermove records where the pointer is, and turns the island if it
-      // is being dragged. The ray, though, is cast once per frame instead
-      // (below). Two reasons, and the second is the real one: a mouse reports
-      // far more often than the screen redraws, and the island keeps moving
-      // under a pointer that has stopped — an answer from the last move would
-      // be an answer about a frame that is no longer on screen, and the lifted
-      // landmark would stay lifted after sliding out from under the cursor.
+      // A pointermove records where the pointer is. The ray, though, is cast
+      // once per frame instead (below). Two reasons, and the second is the real
+      // one: a mouse reports far more often than the screen redraws, and the
+      // island keeps turning under a pointer that has stopped — an answer from
+      // the last move would be an answer about a frame that is no longer on
+      // screen, and the lifted landmark would stay lifted after sliding out
+      // from under the cursor.
       const onMove = (e: PointerEvent) => {
         ptrX = e.clientX;
         ptrY = e.clientY;
         ptrIn = true;
-
-        if (dragging && e.pointerId === dragId) {
-          const dx = e.clientX - lastX;
-          const dy = e.clientY - lastY;
-          lastX = e.clientX;
-          lastY = e.clientY;
-          travelled += Math.abs(dx) + Math.abs(dy);
-          const h = host.clientHeight || 1;
-          // no wrapping and no clamp on the azimuth: it is an angle, it may go
-          // round as many times as the hand cares to take it
-          az -= (dx / h) * TURN_PER_HEIGHT;
-          el = clamp(el - (dy / h) * TURN_PER_HEIGHT, EL_MIN, EL_MAX);
-          station(wantPos);
-
-          // Past the slop, and only past it: the press was a turn rather than
-          // a click, and THAT is when the island stops turning by itself — for
-          // good, because a drift that resumed would slowly carry off whatever
-          // the reader had just turned it round to look at.
-          //
-          // Before the slop it must not, and this is the whole reason the test
-          // is here rather than above: every click carries a pixel or two of
-          // wobble between press and release, so stopping the drift on the
-          // first movement of any press meant a single click anywhere on the
-          // island retired the drift for the rest of the visit.
-          if (travelled > DRAG_SLOP) {
-            drifting = false;
-            if (!announced) {
-              announced = true;
-              setTurned(true);
-            }
-          }
-        }
 
         // nothing is drawing frames to defer to: reduced motion, or the island
         // scrolled out of view while still under the pointer
@@ -479,13 +401,6 @@ export default function Island({
           pick();
           still();
         }
-      };
-
-      const endDrag = (e: PointerEvent) => {
-        if (!dragging || e.pointerId !== dragId) return;
-        dragging = false;
-        if (host.hasPointerCapture(e.pointerId)) host.releasePointerCapture(e.pointerId);
-        host.style.cursor = hovered ? "pointer" : "grab";
       };
 
       const onLeave = () => {
@@ -496,12 +411,7 @@ export default function Island({
 
       // A click on the water is how you put a landmark back down — the same
       // gesture as the caption's own way out, without having to aim for it.
-      // Unless the press travelled first, in which case it was a turn: a
-      // pointerup after a drag still arrives here as a click, and a reader who
-      // has just spun the island round does not expect to have deselected
-      // something by doing it.
       const onClick = (e: MouseEvent) => {
-        if (travelled > DRAG_SLOP) return;
         setSelected(at(e.clientX, e.clientY));
       };
 
@@ -509,10 +419,6 @@ export default function Island({
 
       const t0 = performance.now();
       let last = t0;
-      // true until the island is first taken hold of. The drift is how it
-      // shows itself to someone who has not touched it; after that the angle
-      // is the reader's, and nothing takes it back off them.
-      let drifting = true;
       const base = parts ? { bodyY: parts.body.position.y, headY: parts.head.position.y } : null;
 
       const frame = () => {
@@ -522,15 +428,16 @@ export default function Island({
         last = now;
         const t = (now - t0) / 1000;
 
-        if (!current && drifting) {
+        // The island turns by itself, and only by itself — at the wide shot.
+        // On a landmark the shot is held: that one was composed, and a frame
+        // that kept sliding would carry its subject out of itself.
+        if (!current) {
           az += dt * DRIFT_SPEED;
           station(wantPos);
         }
 
-        // a turn has to answer the hand; a travelling shot may take its time
-        const ease = dragging ? DRAG_EASE : EASE;
-        pos.lerp(wantPos, ease);
-        target.lerp(wantTarget, ease);
+        pos.lerp(wantPos, EASE);
+        target.lerp(wantTarget, EASE);
         camera.position.copy(pos);
         camera.lookAt(target);
 
@@ -626,15 +533,7 @@ export default function Island({
       const onReducedChange = sync;
       // on the host rather than on the window: this canvas is a control, and
       // the only pointer it answers to is one that is actually over it.
-      // pointercancel matters as much as pointerup here — on a phone the
-      // stylesheet gives vertical swipes back to the page (touch-action:
-      // pan-y), and the browser takes the pointer away mid-gesture to scroll
-      // with it. Without this the island would stay stuck to a finger that is
-      // no longer turning it.
-      host.addEventListener("pointerdown", onDown);
       host.addEventListener("pointermove", onMove);
-      host.addEventListener("pointerup", endDrag);
-      host.addEventListener("pointercancel", endDrag);
       host.addEventListener("pointerleave", onLeave);
       host.addEventListener("click", onClick);
       document.addEventListener("visibilitychange", onVisibility);
@@ -646,10 +545,7 @@ export default function Island({
         focusRef.current = null;
         io.disconnect();
         ro.disconnect();
-        host.removeEventListener("pointerdown", onDown);
         host.removeEventListener("pointermove", onMove);
-        host.removeEventListener("pointerup", endDrag);
-        host.removeEventListener("pointercancel", endDrag);
         host.removeEventListener("pointerleave", onLeave);
         host.removeEventListener("click", onClick);
         document.removeEventListener("visibilitychange", onVisibility);
@@ -691,16 +587,7 @@ export default function Island({
 
   return (
     <section className="island" aria-label={label} data-webgl={webgl ? undefined : "off"}>
-      <div ref={hostRef} className="island-stage">
-        {/* Inside the stage, over the island's bottom-left corner. three.js
-            appends its canvas after this, and a positioned box paints over a
-            static one regardless of source order, so the line stays legible
-            without a z-index. It is a React child and the canvas is not, which
-            is safe only because this never moves or unmounts. */}
-        <p className="island-turn" data-turned={turned ? "" : undefined}>
-          {turn}
-        </p>
-      </div>
+      <div ref={hostRef} className="island-stage" />
 
       {/* The caption is the only thing that says what you are looking at, so
           it is a live region: choosing a place with the mouse has to reach a
