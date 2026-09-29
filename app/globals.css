@@ -656,6 +656,12 @@ section {
     grid-template-areas:
       "stage caption"
       "index caption";
+    /* The caption spans both rows, and when it is the taller side its extra
+       height has to land somewhere. With two auto rows it is shared between
+       them, which grows the stage's row and pushes the places down away from
+       the island. The 1fr row takes all of it instead, so the stage's row is
+       the stage's height and the places sit directly under it. */
+    grid-template-rows: auto 1fr;
     align-items: start;
   }
 
