@@ -20,7 +20,7 @@ export default function SiteNav({
   active,
 }: {
   locale: Locale;
-  active?: "journey" | "blog" | "about" | "inspiration";
+  active?: "journey" | "about" | "inspiration";
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -73,12 +73,6 @@ export default function SiteNav({
           aria-current={active === "journey" ? "page" : undefined}
         >
           {t.nav.journey}
-        </Link>
-        <Link
-          href={localePath(locale, "/blog")}
-          aria-current={active === "blog" ? "page" : undefined}
-        >
-          {t.nav.blog}
         </Link>
         <Link
           href={localePath(locale, "/about")}

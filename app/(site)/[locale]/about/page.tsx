@@ -81,8 +81,18 @@ export default async function AboutPage({ params }: PageParams) {
           />
         }
         contacts={
-          // The column's last line, under the list of places — the two ways to
-          // reach a person, after the nine places they have been.
+          // The column's last lines, under the list of places — the languages
+          // spoken, then the two ways to reach a person, after the nine places
+          // they have been. Both lists share one key/value layout.
+          <>
+          <ul className="about-contacts" aria-label={t.about.languagesLabel}>
+            {t.about.languages.map((l) => (
+              <li className="about-contact" key={l.name}>
+                <span className="about-contact-k">{l.name}</span>
+                <span className="about-contact-v">{l.level}</span>
+              </li>
+            ))}
+          </ul>
           <ul className="about-contacts" aria-label={t.about.contactLabel}>
             <li className="about-contact">
               <span className="about-contact-k">{t.about.contactPhone}</span>
@@ -97,6 +107,7 @@ export default async function AboutPage({ params }: PageParams) {
               </a>
             </li>
           </ul>
+          </>
         }
       />
 

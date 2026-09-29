@@ -5,7 +5,6 @@
   "nav": {
     "journey": "journey",
     "about": "about",
-    "blog": "blog",
     "inspiration": "inspiration",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -17,6 +16,14 @@
   },
   "about": {
     "photoAlt": "A portrait photo of Mark Andro",
+    "languagesLabel": "Languages",
+    "languages": [
+      { "name": "Italian", "level": "native" },
+      { "name": "Tagalog", "level": "native" },
+      { "name": "English", "level": "proficient" },
+      { "name": "Spanish", "level": "basic" },
+      { "name": "French", "level": "basic" }
+    ],
     "contactLabel": "Contacts",
     "contactPhone": "Phone",
     "contactEmail": "Email",
@@ -66,10 +73,6 @@
     "contentsLabel": "Journey contents",
     "empty": "nothing here yet"
   },
-  "blog": {
-    "contents": "Writing",
-    "contentsLabel": "Blog contents"
-  },
   "sketchbook": {
     "previous": "previous page",
     "next": "next page"
@@ -90,10 +93,6 @@
     "journey": {
       "title": "Journey — Mark Andro",
       "description": "The work, the studies and the jobs in between — told in order."
-    },
-    "blog": {
-      "title": "Blog — Mark Andro",
-      "description": "Ideas, writing and opinions — whatever happens to be on my mind."
     },
     "inspiration": {
       "title": "Inspiration — Mark Andro",

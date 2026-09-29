@@ -2,6 +2,9 @@
 eyebrow: "SOFTWARE ARCHITECT / ARTISTA / JACK OF ALL TRADES"
 ---
 
-Mark è un software architect residente a Milano.
-Spinto dalla passione per la creazione, unisce la logica tecnica all’espressione artistica. Ex working student con una solida esperienza pratica in diversi ambiti, porta in tutto ciò che fa disciplina, capacità di adattamento e resilienza.
-Fuori dal lavoro, lo trovi a correre o immerso in qualche progetto artistico.
+Software Architect based in Milan. I build with PHP, Laravel, and modern front-end tools — driven by curiosity, discipline, and a love of continuous learning.
+I run marathons, climb mountains, and enjoy the outdoors. I also love creating ART.
+
+By 30 I want to be an IRONMAN.
+
+I left the 9–5 to pursue my dreams. Right now, I’m learning storytelling and video editing, improving my painting, and taking on odd jobs along the way.
