@@ -2,9 +2,6 @@
 eyebrow: "SOFTWARE ARCHITECT / ARTISTA / JACK OF ALL TRADES"
 ---
 
-Software Architect based in Milan. I build with PHP, Laravel, and modern front-end tools — driven by curiosity, discipline, and a love of continuous learning.
-I run marathons, climb mountains, and enjoy the outdoors. I also love creating ART.
+Software Architect con base a Milano, specializzato in PHP, Laravel e strumenti front-end moderni.
 
-By 30 I want to be an IRONMAN.
-
-I left the 9–5 to pursue my dreams. Right now, I’m learning storytelling and video editing, improving my painting, and taking on odd jobs along the way.
+Guidato da disciplina e curiosità, ho canalizzato il mio tempo su tre pilastri fondamentali: Endurance (con l'obiettivo di diventare un Ironman entro i 30 anni), Arte e Video Editing. Ho lasciato il classico 9–5 per padroneggiare questi ambiti alle mie condizioni, unendo tecnologia, storytelling visivo e resistenza fisica.
