@@ -33,6 +33,8 @@
 //
 //   node scripts/sketchbook.mjs                process sketchbook-src/ -> public/
 //   node scripts/sketchbook.mjs --existing     re-compress what's already shipped
+//                                              (and stamp any spread still
+//                                              missing its copyright metadata)
 //   node scripts/sketchbook.mjs --all          both
 //   node scripts/sketchbook.mjs --check        measure only, write nothing
 //   node scripts/sketchbook.mjs --white 230    lift a duller scan's paper to white
@@ -114,6 +116,36 @@ const KEY_MAX_EDGE = 1600; // key on a downscaled copy; 12 MP buys only time
 const KEY_TOLERANCE = 30; // neighbour-to-neighbour RGB drift still counted as background
 
 const PNG_OPTS = { palette: true, colours: 128, compressionLevel: 9, effort: 10 };
+
+// ---- ownership ---------------------------------------------------------
+// These files are served as-is from a static host, so anyone can save them.
+// What travels WITH a saved copy is its metadata: every spread carries the
+// author and rights statement in both EXIF and XMP (see LICENSE-ARTWORK.md).
+const RIGHTS = {
+  artist: "Mark Andro Guevarra",
+  copyright: "© Mark Andro Guevarra. All rights reserved.",
+  url: "https://spacemark3.github.io/personalportfolio/",
+};
+
+const XMP = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/"
+    xmpRights:Marked="True"
+    xmpRights:WebStatement="${RIGHTS.url}">
+   <dc:creator><rdf:Seq><rdf:li>${RIGHTS.artist}</rdf:li></rdf:Seq></dc:creator>
+   <dc:rights><rdf:Alt><rdf:li xml:lang="x-default">${RIGHTS.copyright}</rdf:li></rdf:Alt></dc:rights>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+
+/** Attach the author and rights statement to a pipeline about to be encoded. */
+const stamp = (pipeline) =>
+  pipeline.withExif({ IFD0: { Artist: RIGHTS.artist, Copyright: RIGHTS.copyright } }).withXmp(XMP);
+
 const INPUT_EXT = new Set([".png", ".webp", ".jpg", ".jpeg", ".heic", ".heif", ".tif", ".tiff"]);
 
 const kb = (n) => `${Math.round(n / 1024)} KB`;
@@ -186,10 +218,11 @@ async function placeOnCanvas(bookPng, crop, spineX, f, nudge = 0) {
     .png()
     .toBuffer();
 
-  const out = await sharp({
-    create: { width: f.W, height: f.H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-  })
-    .composite([{ input: book, left, top }])
+  const out = await stamp(
+    sharp({
+      create: { width: f.W, height: f.H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    }).composite([{ input: book, left, top }])
+  )
     .png(PNG_OPTS)
     .toBuffer();
 
@@ -644,17 +677,23 @@ async function recompressExisting({ check }) {
   for (const file of files) {
     const p = path.join(OUT, file);
     const orig = await readFile(p);
-    const out = await sharp(p).png(PNG_OPTS).toBuffer();
-    const keep = out.length < orig.length ? out : orig; // never let it grow
+    const out = await stamp(sharp(p)).png(PNG_OPTS).toBuffer();
+    // never let it grow — except to carry the copyright metadata, which costs
+    // a few hundred bytes the first time a spread is stamped
+    const unstamped = !(await sharp(orig).metadata()).exif;
+    const keep = unstamped || out.length < orig.length ? out : orig;
     if (!check && keep !== orig) await writeFile(p, keep);
 
     before += orig.length;
     after += keep.length;
     const saved = orig.length - keep.length;
     console.log(
-      `  ${saved > 0 ? c.green("~") : c.dim("=")} ${pad(file, 30)} ` +
+      `  ${saved > 0 ? c.green("~") : unstamped ? c.green("©") : c.dim("=")} ${pad(file, 30)} ` +
         `${pad(`${kb(orig.length)} -> ${kb(keep.length)}`, 20)} ` +
-        c.dim(saved > 0 ? `-${Math.round((saved / orig.length) * 100)}%` : "already minimal")
+        c.dim(
+          (saved > 0 ? `-${Math.round((saved / orig.length) * 100)}%` : "already minimal") +
+            (unstamped ? "  + copyright metadata" : "")
+        )
     );
   }
   return { before, after, count: files.length };

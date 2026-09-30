@@ -17,6 +17,9 @@ the script fits each page for you.
 4. **Paste** the lines it prints into the `sketchbook` array in
    `content/content.ts`.
 
+Every spread the script writes carries your name and an "all rights reserved"
+statement in its metadata (see `LICENSE-ARTWORK.md`) — nothing to do by hand.
+
 ## Putting two separate scans on one view
 
 Two different drawings, each its own file, sharing one two-page spread (one on
