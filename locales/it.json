@@ -75,7 +75,8 @@
   },
   "sketchbook": {
     "previous": "pagina precedente",
-    "next": "pagina successiva"
+    "next": "pagina successiva",
+    "loading": "caricamento"
   },
   "inspiration": {
     "verse": "Dio disse: \"Sia la luce!\". E la luce fu",

@@ -34,7 +34,11 @@ export default async function HomeLayout({
           <h1 className="hero-name">{site.name}</h1>
           <Sketchbook
             pages={sketchbook}
-            labels={{ previous: t.sketchbook.previous, next: t.sketchbook.next }}
+            labels={{
+              previous: t.sketchbook.previous,
+              next: t.sketchbook.next,
+              loading: t.sketchbook.loading,
+            }}
           />
         </section>
 

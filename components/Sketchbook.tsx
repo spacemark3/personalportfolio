@@ -19,6 +19,11 @@ type Flip = {
   bell?: number; // riffle only: 0..1 speed curve (drives the motion blur tier)
 };
 
+// how long the opening waits for EVERY spread before giving up on the riffle
+// and resting on the home spread alone (a slow link would otherwise riffle
+// through pages that haven't arrived yet)
+const PATIENCE = 8000;
+
 function Half({
   page,
   side,
@@ -64,8 +69,9 @@ export default function Sketchbook({
   labels,
 }: {
   pages: SketchPage[];
-  /** the two arrow buttons' accessible names, in the page's language */
-  labels: { previous: string; next: string };
+  /** the two arrow buttons' and the loader's accessible names, in the page's
+      language */
+  labels: { previous: string; next: string; loading: string };
 }) {
   const len = pages.length;
 
@@ -86,6 +92,14 @@ export default function Sketchbook({
   const idRef = useRef(0);
   const [intro, setIntro] = useState(false);
   const introRef = useRef(false);
+  // true until the spreads have arrived: a spinner stands in for the book.
+  // Starts true so the spinner is already in the server-rendered HTML.
+  const [loading, setLoading] = useState(true);
+  const loadingRef = useRef(true);
+  const loaded = () => {
+    loadingRef.current = false;
+    setLoading(false);
+  };
 
   // ---- separate mobile path (desktop renders exactly as before) ----
   // On phones: half-quality image variants (much smaller files), a
@@ -125,8 +139,10 @@ export default function Sketchbook({
   };
 
   // the DOM preload stack (below) mounts every spread once `ready` fixes the
-  // quality tier. Decode them all, then run the opening riffle — capped so a
-  // slow asset never strands the intro.
+  // quality tier. Decode them all (a spinner holds the book's place
+  // meanwhile), then run the opening riffle. If they haven't all arrived
+  // within PATIENCE, skip the riffle and rest on the home spread as soon as
+  // that one is in.
   useEffect(() => {
     if (!ready) return;
     let cancelled = false;
@@ -135,11 +151,7 @@ export default function Sketchbook({
       if (cancelled) return;
       // The riffle replays on every arrival at the home page, phones included:
       // on mobile every spread is already mounted and decoded, so no turn ever
-      // waits on a fetch. Reduced-motion users still open on the resting spread.
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setCurrent(home);
-        return;
-      }
+      // waits on a fetch.
       introRef.current = true;
       setIntro(true);
       seqRef.current = buildSeq();
@@ -147,17 +159,30 @@ export default function Sketchbook({
       idRef.current += 1;
       setFlip({ id: idRef.current, dir: "next", ...seqRef.current[0] });
     };
-    const decodeAll = () =>
-      Promise.allSettled(
-        [...document.querySelectorAll<HTMLImageElement>(".sb-preload img, .sb-stack img")].map(
-          (im) => im.decode?.().catch(() => {})
-        )
-      );
+    // decode() settles once the image has both arrived and decoded
+    const decode = (im?: HTMLImageElement) => im?.decode?.().catch(() => {});
     // let the freshly-mounted preloads issue their requests first
     const kick = setTimeout(() => {
-      Promise.race([decodeAll(), new Promise((r) => (t = setTimeout(r, 1500)))]).then(() =>
-        setTimeout(go, 200)
-      );
+      // same order as `pages` in both the desktop preload and the mobile stack
+      const imgs = [
+        ...document.querySelectorAll<HTMLImageElement>(".sb-preload img, .sb-stack img"),
+      ];
+      Promise.race([
+        Promise.allSettled(imgs.map(decode)).then(() => true),
+        new Promise<boolean>((r) => (t = setTimeout(() => r(false), PATIENCE))),
+      ]).then(async (all) => {
+        // Reduced-motion users open on the resting spread too.
+        if (!all || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          if (!all) await decode(imgs[home]);
+          if (cancelled) return;
+          setCurrent(home);
+          loaded();
+          return;
+        }
+        if (cancelled) return;
+        loaded();
+        t = setTimeout(go, 200);
+      });
     }, 50);
     return () => {
       cancelled = true;
@@ -169,9 +194,9 @@ export default function Sketchbook({
 
   const step = (dir: "next" | "prev") => {
     // navigation is disabled while the opening riffle plays (see the buttons'
-    // `disabled={intro}` below, which covers pointer input; this covers the
+    // `disabled={intro || loading}` below, which covers pointer input; this covers the
     // keyboard path, which bypasses that attribute entirely)
-    if (introRef.current) return;
+    if (introRef.current || loadingRef.current) return;
     // if a fold is already running, snap it done and turn from where it landed
     const base = flip ? flip.to : current;
     if (flip) setCurrent(flip.to);
@@ -204,7 +229,7 @@ export default function Sketchbook({
 
   return (
     <div
-      className={`sb-wrap${intro ? ` intro${blurTier}` : ""}`}
+      className={`sb-wrap${loading ? " loading" : ""}${intro ? ` intro${blurTier}` : ""}`}
       style={
         intro && flip
           ? ({ "--riffle-dur": `${flip.dur ?? 0.16}s` } as React.CSSProperties)
@@ -224,13 +249,27 @@ export default function Sketchbook({
         <button
           className="sb-arrow left"
           onClick={prev}
-          disabled={intro}
+          disabled={intro || loading}
           aria-label={labels.previous}
         >
           <Chevron dir="left" />
         </button>
 
         <div className="sb-book" style={{ aspectRatio: `${pages[0].w} / ${pages[0].h}` }}>
+          {/* a little open book that pencils itself in, rubs out, and redraws.
+              pathLength=1 lets one dash animation drive every stroke. */}
+          {loading && (
+            <div className="sb-loader" role="status" aria-label={labels.loading}>
+              <svg viewBox="0 0 64 48" fill="none" aria-hidden>
+                <path pathLength={1} d="M32 13 C26 8.5 15 8 6 11.5 L6.5 38 C15 35 26 35.5 32 40" />
+                <path pathLength={1} d="M32 13 C38 8.5 49 8 58 11.5 L57.5 38 C49 35 38 35.5 32 40" />
+                <path pathLength={1} d="M32 13 L32.3 40" />
+                <path pathLength={1} d="M12 19 C17 17.5 22 17.5 27 19.5" />
+                <path pathLength={1} d="M12.5 25 C17 23.5 21 23.5 25 25" />
+                <path pathLength={1} d="M38 24 C40 18 44 17 46 21 C48 25 51 24 52.5 19.5" />
+              </svg>
+            </div>
+          )}
           {/* mobile: ALL spreads stay mounted, decoded and stacked under the
               flip layers; the current one is shown with a visibility toggle.
               No src swap ever happens, so no frame can paint a stale bitmap
@@ -347,14 +386,14 @@ export default function Sketchbook({
           <button
             className="sb-zone sb-prev"
             onClick={prev}
-            disabled={intro}
+            disabled={intro || loading}
             tabIndex={-1}
             aria-hidden="true"
           />
           <button
             className="sb-zone sb-next"
             onClick={next}
-            disabled={intro}
+            disabled={intro || loading}
             tabIndex={-1}
             aria-hidden="true"
           />
@@ -363,7 +402,7 @@ export default function Sketchbook({
         <button
           className="sb-arrow right"
           onClick={next}
-          disabled={intro}
+          disabled={intro || loading}
           aria-label={labels.next}
         >
           <Chevron dir="right" />
