@@ -76,7 +76,9 @@
   "sketchbook": {
     "previous": "previous page",
     "next": "next page",
-    "loading": "loading"
+    "loading": "loading",
+    "index": "Sketchbooks",
+    "indexLabel": "Sketchbook contents"
   },
   "inspiration": {
     "verse": "God said, \"Let there be light\", and there was light",

@@ -2,7 +2,17 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import type { SketchPage } from "@/content/content";
+import type { SketchPage, SketchVolume } from "@/content/content";
+
+/** every accessible name and heading the book needs, in the page's language */
+export type SketchbookLabels = {
+  previous: string;
+  next: string;
+  loading: string;
+  /** the index's heading, and its accessible name */
+  index: string;
+  indexLabel: string;
+};
 
 // Sketchbook page-turn: each PNG is one full spread. Turning forward folds
 // the right half over the center spine (3D rotateY); its back face reveals
@@ -65,14 +75,18 @@ const Chevron = ({ dir }: { dir: "left" | "right" }) => (
 );
 
 export default function Sketchbook({
-  pages,
+  volumes,
+  vol,
+  onVol,
   labels,
 }: {
-  pages: SketchPage[];
-  /** the two arrow buttons' and the loader's accessible names, in the page's
-      language */
-  labels: { previous: string; next: string; loading: string };
+  /** every sketchbook, for the index; `vol` is the one on the table */
+  volumes: SketchVolume[];
+  vol: number;
+  onVol: (vol: number) => void;
+  labels: SketchbookLabels;
 }) {
+  const pages = volumes[vol].pages;
   const len = pages.length;
 
   // opening sequence: riffle fast through the whole book, beginning at the
@@ -194,8 +208,8 @@ export default function Sketchbook({
 
   const step = (dir: "next" | "prev") => {
     // navigation is disabled while the opening riffle plays (see the buttons'
-    // `disabled={intro || loading}` below, which covers pointer input; this covers the
-    // keyboard path, which bypasses that attribute entirely)
+    // `disabled` below, which covers pointer input; this covers the keyboard
+    // path, which bypasses that attribute entirely)
     if (introRef.current || loadingRef.current) return;
     // if a fold is already running, snap it done and turn from where it landed
     const base = flip ? flip.to : current;
@@ -245,6 +259,28 @@ export default function Sketchbook({
           <feGaussianBlur stdDeviation="14 0" />
         </filter>
       </svg>
+      {/* the index: one line per sketchbook, the open one marked. It hangs in
+          the viewport's left margin (wide screens only), outside the hero's
+          centred column, so the book never moves to make room. */}
+      <nav className="sb-index" aria-label={labels.indexLabel}>
+        <p className="jr-index-h">{labels.index}</p>
+        <ul className="jr-index-list sb-index-list">
+          {volumes.map((v, vi) => (
+            <li key={v.id}>
+              <button
+                className="jr-index-item sb-index-item"
+                data-here={vi === vol || undefined}
+                aria-current={vi === vol ? "true" : undefined}
+                onClick={() => onVol(vi)}
+              >
+                <span className="jr-index-dot" aria-hidden="true" />
+                <span className="jr-index-lead">{v.label}</span>
+                <span className="jr-index-when">{v.title}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
       <div className="sb-stage">
         <button
           className="sb-arrow left"
@@ -419,6 +455,22 @@ export default function Sketchbook({
           {label}
         </p>
       </div>
+      {/* screens too narrow for the index still need a way between volumes —
+          only once there is more than one, so a single book adds nothing */}
+      {volumes.length > 1 && (
+        <div className="sb-vols">
+          {volumes.map((v, vi) => (
+            <button
+              key={v.id}
+              className="sb-vol"
+              aria-pressed={vi === vol}
+              onClick={() => onVol(vi)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

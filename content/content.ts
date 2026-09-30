@@ -81,21 +81,39 @@ const mounted = (file: string, title: string, flags?: SketchFlags): SketchPage =
   ...(flags?.start ? { start: true } : {}),
 });
 
-export const sketchbook: SketchPage[] = [
-  mounted("i want to live", "\"I want to live!\""),
-  mounted("助けて", "\"助けて\""),
-  mounted("eustass", "Damned Punk!"),
-  mounted("i am proud of you", "You reap what you sow!"),
-  mounted("sasuke", "This is the last time"),
-  mounted("konan", "Konan - Itachi"),
-  mounted("kisame", "Kisame - Sasori"),
-  mounted("notes", "\"I will never forget you\""),
-  mounted("kimono", "Diwata"),
-  mounted("megumi", "Megumi"),
-  mounted("fly", "To Pimp A Caterpillar"),
-  mounted("prisoner of the mind", "Prisoner of The Mind"),
-  mounted("bakugo", "Last fight"),
-  mounted("thinking of the blue sky", "青い空が好きです", { home: true }),
+// One sketchbook. The hero shows one volume at a time and its index lists
+// them all. `label` and `title` are the book's own name, like the drawings'
+// — not translated.
+export type SketchVolume = { id: string; label: string; title: string; pages: SketchPage[] };
+
+// Adding a volume:
+//   1. drop its scans in sketchbook-src/vol-2/  (named exactly as for VOL.1)
+//   2. npm run sketchbook   — writes public/work/sketchbook/vol-2/ and prints
+//      the whole entry below, ready to paste after the last volume
+// A volume's `id` is its folder name; VOL.1 is the one exception, its files
+// sit directly in sketchbook-src/ and public/work/sketchbook/.
+export const sketchbooks: SketchVolume[] = [
+  {
+    id: "vol-1",
+    label: "VOL.1",
+    title: "Anime",
+    pages: [
+      mounted("i want to live", "\"I want to live!\""),
+      mounted("助けて", "\"助けて\""),
+      mounted("eustass", "Damned Punk!"),
+      mounted("i am proud of you", "You reap what you sow!"),
+      mounted("sasuke", "This is the last time"),
+      mounted("konan", "Konan - Itachi"),
+      mounted("kisame", "Kisame - Sasori"),
+      mounted("notes", "\"I will never forget you\""),
+      mounted("kimono", "Diwata"),
+      mounted("megumi", "Megumi"),
+      mounted("fly", "To Pimp A Caterpillar"),
+      mounted("prisoner of the mind", "Prisoner of The Mind"),
+      mounted("bakugo", "Last fight"),
+      mounted("thinking of the blue sky", "青い空が好きです", { home: true }),
+    ],
+  },
 ];
 
 // ---------- inspiration: the people who supported him ----------

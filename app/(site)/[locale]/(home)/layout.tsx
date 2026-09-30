@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
-import Sketchbook from "@/components/Sketchbook";
-import { site, sketchbook } from "@/content/content";
+import SketchbookShelf from "@/components/SketchbookShelf";
+import { site, sketchbooks } from "@/content/content";
 import { getAbout } from "@/lib/content";
 import { getDictionary, isLocale } from "@/lib/i18n";
 
@@ -32,12 +32,14 @@ export default async function HomeLayout({
         <section id="sketchbook" className="hero">
           <p className="hero-kicker">{about.eyebrow}</p>
           <h1 className="hero-name">{site.name}</h1>
-          <Sketchbook
-            pages={sketchbook}
+          <SketchbookShelf
+            volumes={sketchbooks}
             labels={{
               previous: t.sketchbook.previous,
               next: t.sketchbook.next,
               loading: t.sketchbook.loading,
+              index: t.sketchbook.index,
+              indexLabel: t.sketchbook.indexLabel,
             }}
           />
         </section>

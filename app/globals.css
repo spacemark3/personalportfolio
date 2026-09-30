@@ -1078,6 +1078,80 @@ section {
   }
 }
 
+/* ---- the sketchbook index: one line per volume ----
+   Dressed in the journey index's rules (.jr-index-*, further down); only the
+   placement and the button resets are its own. The hero column is as wide as
+   the book, so the index hangs in the viewport's left margin instead —
+   absolutely placed, which is what keeps the centred stack exactly where it
+   was. Below 1340px that margin is narrower than the index, so it is hidden. */
+.sb-index {
+  display: none;
+}
+
+@media (min-width: 1340px) {
+  .sb-index {
+    display: block;
+    position: absolute;
+    /* .sb-wrap is centred on the viewport: this is the viewport's left edge,
+       plus the site's edge margin */
+    left: calc(50% - 50vw + var(--edge));
+    top: 50%;
+    transform: translateY(-50%);
+    width: 190px;
+    max-height: calc(100svh - 220px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    text-align: left;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(29, 31, 34, 0.22) transparent;
+  }
+}
+
+.sb-index-list {
+  margin-top: var(--s-5);
+}
+
+.sb-index-item,
+.sb-vol {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sb-index-item {
+  width: 100%;
+}
+
+/* narrow screens, two or more volumes: a row of volume names under the
+   caption stands in for the index */
+.sb-vols {
+  display: flex;
+  gap: var(--s-4);
+}
+
+.sb-vol {
+  padding: var(--s-2) 0;
+  font-size: calc(10px * var(--fs));
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  transition: color 0.2s;
+}
+
+.sb-vol:hover,
+.sb-vol[aria-pressed="true"] {
+  color: var(--ink);
+}
+
+@media (min-width: 1340px) {
+  .sb-vols {
+    display: none;
+  }
+}
+
 .sb-full img {
   width: 100%;
   height: auto;

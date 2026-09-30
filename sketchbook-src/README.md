@@ -14,11 +14,29 @@ the script fits each page for you.
 2. **Name it with the side it goes on**, and the caption you want:
    `kimono - right.jpg` shows the caption "Kimono".
 3. **Run** `npm run sketchbook`
-4. **Paste** the lines it prints into the `sketchbook` array in
-   `content/content.ts`.
+4. **Paste** the lines it prints into the `pages` of a volume in the
+   `sketchbooks` array in `content/content.ts`.
 
 Every spread the script writes carries your name and an "all rights reserved"
 statement in its metadata (see `LICENSE-ARTWORK.md`) — nothing to do by hand.
+
+## Starting a new volume (VOL.2, VOL.3, …)
+
+The scans directly in this folder are VOL.1. A new volume is a subfolder:
+
+1. **Drop its scans in `sketchbook-src/vol-2/`** — named exactly as above
+   (`name - left.jpg`, `name - right.jpg`, `name - spread.jpg`).
+2. **Run** `npm run sketchbook`. It writes the spreads to
+   `public/work/sketchbook/vol-2/` and prints a complete volume entry.
+3. **Paste** that entry after the last volume in the `sketchbooks` array in
+   `content/content.ts`, and fill in its `title`.
+
+The volume then appears in the index on the home page. The folder name is the
+volume's `id` (`vol-3` becomes `VOL.3`). Adding drawings to it later works the
+same way: drop, run, paste the new `mounted(...)` lines into its `pages`. To
+choose the spread a volume opens on, add `{ home: true }` to that line.
+
+One run processes every volume's folder, and `spine.json` is per folder.
 
 ## Putting two separate scans on one view
 

@@ -12,6 +12,11 @@
 // the same base name become one spread. Anything unsuffixed takes the photo
 // path, so both workflows coexist.
 //
+// VOLUMES: scans directly in sketchbook-src/ are VOL.1 and ship to
+// public/work/sketchbook/. Scans in a subfolder — sketchbook-src/vol-2/ — are
+// a further volume and ship to public/work/sketchbook/vol-2/. One run handles
+// every volume; nothing else changes between them.
+//
 // The flipbook (components/Sketchbook.tsx + the .sb-* block in globals.css)
 // makes three demands that this script exists to satisfy automatically:
 //
@@ -45,7 +50,7 @@
 //   node scripts/sketchbook.mjs --no-key       photo path: never cut out
 
 import sharp from "sharp";
-import { readdir, readFile, writeFile, stat } from "node:fs/promises";
+import { readdir, readFile, writeFile, stat, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -520,8 +525,42 @@ async function opaqueBox(input) {
 //  driver
 // =======================================================================
 
-async function loadSpineNudges() {
-  const f = path.join(SRC, "spine.json");
+/** One import job per volume. VOL.1 is the two root folders themselves; every
+ *  subfolder of sketchbook-src/ is a further volume, written to the subfolder
+ *  of the same name under public/work/sketchbook/. The folder name is the
+ *  volume's `id` in content/content.ts. */
+async function listVolumes() {
+  const vols = [{ id: null, src: SRC, out: OUT, prefix: "" }];
+  if (!existsSync(SRC)) return vols;
+  for (const d of await readdir(SRC, { withFileTypes: true })) {
+    if (!d.isDirectory()) continue;
+    vols.push({
+      id: d.name,
+      src: path.join(SRC, d.name),
+      out: path.join(OUT, d.name),
+      prefix: `${d.name}/`, // what mounted() needs in front of the file name
+    });
+  }
+  return vols;
+}
+
+/** The shipped folders: VOL.1's, then one per further volume. */
+async function listOutDirs() {
+  const dirs = [OUT];
+  for (const d of await readdir(OUT, { withFileTypes: true })) {
+    if (d.isDirectory()) dirs.push(path.join(OUT, d.name));
+  }
+  return dirs;
+}
+
+/** `vol-2` -> `VOL.2`; anything else is just upper-cased. */
+const volLabel = (id) => {
+  const m = id.match(/^vol[\s._-]*(\d+)$/i);
+  return m ? `VOL.${m[1]}` : id.toUpperCase();
+};
+
+async function loadSpineNudges(dir) {
+  const f = path.join(dir, "spine.json");
   if (!existsSync(f)) return {};
   try {
     return JSON.parse(await readFile(f, "utf8"));
@@ -564,7 +603,8 @@ function planJobs(files) {
   return [...mounts.values(), ...photos].sort((a, b) => a.name.localeCompare(b.name));
 }
 
-async function processNew(opts) {
+async function processNew(opts, vol) {
+  const SRC = vol.src;
   if (!existsSync(SRC)) {
     console.log(c.dim(`  no ${path.relative(root, SRC)}/ — nothing to import`));
     return [];
@@ -578,13 +618,14 @@ async function processNew(opts) {
     return [];
   }
 
-  const nudges = await loadSpineNudges();
+  const nudges = await loadSpineNudges(SRC);
   const jobs = planJobs(files);
   const done = [];
+  if (!opts.check) await mkdir(vol.out, { recursive: true });
 
   for (const job of jobs) {
     const name = outName(job.name);
-    const dest = path.join(OUT, `${name}.png`);
+    const dest = path.join(vol.out, `${name}.png`);
     const nudge = Number(nudges[job.name] ?? nudges[name] ?? 0) || 0;
 
     try {
@@ -659,7 +700,7 @@ async function processNew(opts) {
         );
       }
 
-      done.push({ name, title: toTitle(job.name), kind: job.kind });
+      done.push({ name: vol.prefix + name, title: toTitle(job.name), kind: job.kind, vol });
     } catch (e) {
       console.log(c.red(`  x ${job.name}: ${e.message}`));
     }
@@ -669,7 +710,7 @@ async function processNew(opts) {
 
 /** Re-encode what's already shipped. Geometry is untouched — same pixels, same
  *  dimensions — so nothing about the animation changes. */
-async function recompressExisting({ check }) {
+async function recompressExisting({ check }, OUT) {
   const files = (await readdir(OUT)).filter((f) => f.toLowerCase().endsWith(".png")).sort();
   let before = 0;
   let after = 0;
@@ -699,7 +740,7 @@ async function recompressExisting({ check }) {
   return { before, after, count: files.length };
 }
 
-async function folderSize() {
+async function folderSize(OUT) {
   const files = (await readdir(OUT)).filter((f) => f.toLowerCase().endsWith(".png"));
   let total = 0;
   for (const f of files) total += (await stat(path.join(OUT, f))).size;
@@ -732,29 +773,55 @@ const wantNew = flag("--all") || !flag("--existing");
 
 if (opts.check) console.log(c.dim("\n  --check: measuring only, nothing will be written"));
 
-let added = [];
+const rel = (p) => path.relative(root, p);
+const vols = await listVolumes();
+
+const added = [];
 if (wantNew) {
-  console.log(c.bold(`\n  importing ${path.relative(root, SRC)}/ -> ${path.relative(root, OUT)}/\n`));
-  added = await processNew(opts);
+  for (const vol of vols) {
+    console.log(c.bold(`\n  importing ${rel(vol.src)}/ -> ${rel(vol.out)}/\n`));
+    added.push(...(await processNew(opts, vol)));
+  }
 }
 if (wantExisting) {
-  console.log(c.bold(`\n  re-compressing ${path.relative(root, OUT)}/\n`));
-  const r = await recompressExisting(opts);
-  console.log(c.dim(`\n  ${r.count} spreads: ${kb(r.before)} -> ${kb(r.after)}`));
+  for (const dir of await listOutDirs()) {
+    console.log(c.bold(`\n  re-compressing ${rel(dir)}/\n`));
+    const r = await recompressExisting(opts, dir);
+    console.log(c.dim(`\n  ${r.count} spreads: ${kb(r.before)} -> ${kb(r.after)}`));
+  }
 }
 
-const { total, count } = await folderSize();
-console.log(
-  `\n  ${c.bold("homepage first-paint weight:")} ${kb(total)} across ${count} spreads` +
-    c.dim("  (every spread is preloaded with priority)")
-);
+// only the open volume is fetched, so each folder is its own first paint
+console.log(`\n  ${c.bold("first-paint weight per volume")}${c.dim("  (every spread of the open volume is preloaded)")}`);
+for (const dir of await listOutDirs()) {
+  const { total, count } = await folderSize(dir);
+  if (count) console.log(`    ${pad(`${rel(dir)}/`, 34)} ${kb(total)} across ${count} spreads`);
+}
 
-if (added.length) {
-  console.log(c.bold("\n  paste into the `sketchbook` array in content/content.ts:\n"));
-  for (const { name, title, kind } of added) {
-    const fn = kind === "mount" ? "mounted" : "sketch";
-    console.log(`    ${fn}(${JSON.stringify(name)}, ${JSON.stringify(title)}),`);
+const line = ({ name, title, kind }) =>
+  `${kind === "mount" ? "mounted" : "sketch"}(${JSON.stringify(name)}, ${JSON.stringify(title)}),`;
+
+for (const vol of vols) {
+  const mine = added.filter((a) => a.vol === vol);
+  if (!mine.length) continue;
+  if (!vol.id) {
+    console.log(c.bold("\n  paste into the `pages` of \"vol-1\" in `sketchbooks`, content/content.ts:\n"));
+    for (const a of mine) console.log(`      ${line(a)}`);
+    continue;
   }
+  console.log(
+    c.bold(`\n  "${vol.id}" — paste this whole entry after the last volume in \`sketchbooks\`,`) +
+      c.bold("\n  content/content.ts, and give it a title") +
+      c.dim(`  (already there? paste only the new mounted() lines)\n`)
+  );
+  console.log(`  {`);
+  console.log(`    id: ${JSON.stringify(vol.id)},`);
+  console.log(`    label: ${JSON.stringify(volLabel(vol.id))},`);
+  console.log(`    title: "",`);
+  console.log(`    pages: [`);
+  for (const a of mine) console.log(`      ${line(a)}`);
+  console.log(`    ],`);
+  console.log(`  },`);
 }
 console.log(
   c.dim("\n  Open each new spread and check the fold doesn't cut through the drawing.\n") +
